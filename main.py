@@ -27,51 +27,58 @@ clock = pygame.time.Clock()
 running = True
 player_size = 10
 has_food = False
+has_poison = False
 dt = 1
-player_pos = pygame.Vector2(screen.get_width() / 2, screen.get_height() / 2)
+screen_width = screen.get_width()
+screen_height = screen.get_height()
+player_pos = pygame.Vector2(screen_width / 2, screen_height / 2)
 food_pos = pygame.Vector2(0,0)
+poison_pos = pygame.Vector2(0,0)
 
 while running:
-    # poll for events
-    # pygame.QUIT event means the user clicked X to close your window
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
     
-    # fill the screen with a color to wipe away anything from last frame
-    screen.fill("purple")
+    screen.fill("black")
 
-    # walls = [pygame.Vector2(0,0)]
-    # walls.append(pygame.draw.line(screen, "red", (0,0) , (100,100),1))
-    # walls.append(pygame.draw.line(screen, "red", (0,0) , (0,100),1))
-    # walls.append(pygame.draw.line(screen, "red", (0,0) , (100,0),1))
-    # walls.append(pygame.draw.line(screen, "red", (100,0) , (100,100),1))
+    walls = [] 
+    walls.append(pygame.draw.line(screen, "red", (0,screen_height) , (screen_width,screen_height),5))
+    walls.append(pygame.draw.line(screen, "red", (0,0) , (0,screen_height),5))
+    walls.append(pygame.draw.line(screen, "red", (0,0) , (screen_width,0),5))
+    walls.append(pygame.draw.line(screen, "red", (screen_width,0) , (screen_width,screen_height),5))
 
     
+    player = pygame.draw.circle(screen, "blue", player_pos, player_size)
 
-    pygame.draw.circle(screen, "red", player_pos, player_size)
-    pygame.draw.circle(screen, "green", food_pos, 20)
+    food = None
+    if has_food:
+        food = pygame.draw.circle(screen, "green", food_pos, 20)
     
+    poison = None
+    if has_poison:
+        poison = pygame.draw.circle(screen, "red", poison_pos, 20)
+
+    if player.collidelist(walls) != -1:
+        pygame.quit()
+
+    if has_food and player.collideobjects([food]) != None:
+        player_size += 5
+        has_food = False
+
     if not has_food:
         food_pos = pygame.Vector2(random.randint(0,screen.get_width()), random.randint(0,screen.get_height()))
         has_food = True
 
-    distance = (food_pos - player_pos).length()
-    if distance - player_size < 1: 
-        player_size += 5
-        has_food = False
-   
-    # distance_wall = 40
-    # for i in range(0,3):
-    #     current_distance_wall = (walls[i] - player_pos).length()
-    #     if current_distance_wall < distance_wall:
-    #         distance_wall = current_distance_wall
-    #     if distance_wall - player_size <5:
-    #         pygame.quit()
-    #
-    #
-    # if distance_wall - player_size < 5:
-    #     pygame.quit()
+    if has_poison and player.collideobjects([poison]) != None:
+        player_size -= 5
+        if player_size < 0:
+            pygame.quit()
+        has_poison = False
+
+    if not has_poison:
+        poison_pos = pygame.Vector2(random.randint(0,screen.get_width()), random.randint(0,screen.get_height()))
+        has_poison = True
 
     keys = pygame.key.get_pressed()
     if keys[pygame.K_w]:
@@ -83,11 +90,8 @@ while running:
     if keys[pygame.K_d]:
         player_pos.x += 10 * dt
 
-    # RENDER YOUR GAME HERE
-
-    # flip() the display to put your work on screen
     pygame.display.flip()
 
-    clock.tick(60)  # limits FPS to 60
+    clock.tick(180)
 
 pygame.quit()
