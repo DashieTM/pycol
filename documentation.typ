@@ -1,4 +1,4 @@
-#import "template.typst": *
+#import "template.typ": *
 
 #show: doc => conf(
   author: "Kaj Habegger & Fabio Lenherr",
