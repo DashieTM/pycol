@@ -15,7 +15,20 @@
 
 import pygame
 import random
-from actor import Move
+
+class Move:
+    # 0 means no change
+    # 1 means positive change -> up or right
+    # -1 means negative change -> down or left
+    x = 0
+    y = 0
+
+    def __init__(self,new_x = 0,new_y = 0):
+        self.x = new_x
+        self.y = new_y
+
+    def get_pos(self):
+        return (self.x,self.y)
 
 class PySnake:
     pygame.init()
@@ -32,7 +45,7 @@ class PySnake:
     food_pos = pygame.Vector2(0,0)
     poison_pos = pygame.Vector2(0,0)
 
-    def game_loop(self, human = False):
+    def game_loop(self):
         # pygame setup
         while self.running:
             for event in pygame.event.get():
@@ -42,10 +55,7 @@ class PySnake:
                 self.update_screen()
                 self.check_collision()
                 self.reset_interacts()
-
-                if (human == True):
-                    self.human_input()
-
+                self.human_input()
         pygame.quit()
 
 

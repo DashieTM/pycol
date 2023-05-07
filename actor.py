@@ -22,19 +22,6 @@ MAX_MEMORY = 100_000
 BATCH_SIZE = 1000
 LEARNINGRATE = 0.001
 
-class Move:
-    # 0 means no change
-    # 1 means positive change -> up or right
-    # -1 means negative change -> down or left
-    x = 0
-    y = 0
-
-    def __init__(self,new_x = 0,new_y = 0):
-        self.x = new_x
-        self.y = new_y
-
-    def get_pos(self):
-        return (self.x,self.y)
 
 class Agent:
 
