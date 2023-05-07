@@ -33,7 +33,7 @@ class Agent:
         self.epsilon = 0 # controls randomness
         self.gamma = 0.9 #discount
         self.memory = deque(maxlen=MAX_MEMORY)
-        self.model = Linear_QNet(32, 256, 3)
+        self.model = Linear_QNet(28, 256, 4)
         self.trainer = QTrainer(self.model, lr=LEARNINGRATE, gamma=self.gamma)
         # if memory exceeded automatically removes it on the left
 
@@ -79,10 +79,10 @@ class Agent:
             game.player_pos.y < game.food_pos.y,
             game.player_pos.y > game.food_pos.y,
 
-            game.player_pos.x < game.poison_pos.x,
-            game.player_pos.x > game.poison_pos.x,
-            game.player_pos.y < game.poison_pos.y,
-            game.player_pos.y > game.poison_pos.y,
+            # game.player_pos.x < game.poison_pos.x,
+            # game.player_pos.x > game.poison_pos.x,
+            # game.player_pos.y < game.poison_pos.y,
+            # game.player_pos.y > game.poison_pos.y,
         ]
         return np.array(state, dtype=int)
 
@@ -106,7 +106,7 @@ class Agent:
 
     def get_action(self, state) -> list[int]:
         self.epsilon = 80 - self.game_amount
-        predicted_move = [0,0,0,0,0,0]
+        predicted_move = [0,0,0,0]
         # 0 0 0 0 0 0 -> first 3 change of x
         # -1 0 1 
         if random.randint(0, 200) < self.epsilon:
@@ -115,17 +115,17 @@ class Agent:
             y = random.randint(-1,1)
             if x == -1:
                 predicted_move[0] = 1
-            elif x == 0:
-                predicted_move[1] = 1
+            # elif x == 0:
+            #     predicted_move[1] = 1
             elif x == 1:
-                predicted_move[2] = 1
+                predicted_move[1] = 1
 
             if y == -1:
-                predicted_move[3] = 1
-            elif y == 0:
-                predicted_move[4] = 1
+                predicted_move[2] = 1
+            # elif y == 0:
+            #     predicted_move[4] = 1
             elif y == 1:
-                predicted_move[5] = 1
+                predicted_move[3] = 1
         else:
             current_state = torch.tensor(state, dtype=torch.float)
             prediction = self.model(current_state)
@@ -143,7 +143,6 @@ def train():
     best_score = 0
     agent = Agent()
     game = PySnake()
-    last_pos = pygame.Vector2(0,0)
     while(True):
         # get old state
         current_state = agent.get_state(game)
@@ -154,9 +153,6 @@ def train():
         # perform move and get new state
         reward, done, score = game.ai_step(move)
 
-        if game.player_pos == last_pos:
-            reward -= 10
-        last_pos = game.player_pos
         state_new = agent.get_state(game)
 
         # train short memory

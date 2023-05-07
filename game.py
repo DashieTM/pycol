@@ -58,7 +58,7 @@ class PySnake:
         self.game_over = False
 
 
-    def game_loop(self, human = False, move: list[int] = [0,0,0,0,0,0]):
+    def game_loop(self, human = False, move: list[int] = [0,0,0,0]):
         # pygame setup
         while self.game_over == False:
             for event in pygame.event.get():
@@ -67,6 +67,7 @@ class PySnake:
                     break
 
             self.update_screen()
+            self.reward = -1
             if self.check_wall_collision(self.player):
                 self.game_over = True
                 self.reward = -1000
@@ -77,7 +78,7 @@ class PySnake:
             if self.check_poison_collision(self.player):
                 self.player_size -= 5
                 self.reward = -10
-                if self.player_size < 0:
+                if self.player_size <= 0:
                     self.game_over = True
                 self.has_poison = False
             self.reset_interacts()
@@ -107,15 +108,15 @@ class PySnake:
     def ai_input(self,move: list[int]):
         if move[0] == 1:
             self.player_pos.x -= float(self.move_speed * self.dt)
+        # elif move[1] == 1:
+        #     return
         elif move[1] == 1:
-            return
-        elif move[2] == 1:
             self.player_pos.x += float(self.move_speed * self.dt)
-        if move[3] == 1:
+        if move[2] == 1:
             self.player_pos.y -= float(self.move_speed * self.dt)
-        elif move[4] == 1:
-            return
-        elif move[5] == 1:
+        # elif move[4] == 1:
+        #     return
+        elif move[3] == 1:
             self.player_pos.y += float(self.move_speed * self.dt)
 
     def ai_step(self, move: list[int]):
