@@ -33,7 +33,7 @@ class Agent:
         self.epsilon = 0 # controls randomness
         self.gamma = 0.9 #discount
         self.memory = deque(maxlen=MAX_MEMORY)
-        self.model = Linear_QNet(24, 256, 3)
+        self.model = Linear_QNet(32, 256, 3)
         self.trainer = QTrainer(self.model, lr=LEARNINGRATE, gamma=self.gamma)
         # if memory exceeded automatically removes it on the left
 
@@ -73,6 +73,16 @@ class Agent:
             game.check_poison_collision(down_right),
             game.check_poison_collision(down_left),
             game.check_poison_collision(left),
+
+            game.player_pos.x < game.food_pos.x,
+            game.player_pos.x > game.food_pos.x,
+            game.player_pos.y < game.food_pos.y,
+            game.player_pos.y > game.food_pos.y,
+
+            game.player_pos.x < game.poison_pos.x,
+            game.player_pos.x > game.poison_pos.x,
+            game.player_pos.y < game.poison_pos.y,
+            game.player_pos.y > game.poison_pos.y,
         ]
         return np.array(state, dtype=int)
 
@@ -100,6 +110,7 @@ class Agent:
         # 0 0 0 0 0 0 -> first 3 change of x
         # -1 0 1 
         if random.randint(0, 200) < self.epsilon:
+
             x = random.randint(-1,1)
             y = random.randint(-1,1)
             if x == -1:
@@ -131,7 +142,8 @@ def train():
     # current_score = 0
     best_score = 0
     agent = Agent()
-    game = PySnake() 
+    game = PySnake()
+    last_pos = pygame.Vector2(0,0)
     while(True):
         # get old state
         current_state = agent.get_state(game)
@@ -141,6 +153,10 @@ def train():
 
         # perform move and get new state
         reward, done, score = game.ai_step(move)
+
+        if game.player_pos == last_pos:
+            reward -= 10
+        last_pos = game.player_pos
         state_new = agent.get_state(game)
 
         # train short memory
