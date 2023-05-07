@@ -44,8 +44,12 @@ class PySnake:
     player_pos = pygame.Vector2(screen_width / 2, screen_height / 2)
     food_pos = pygame.Vector2(0,0)
     poison_pos = pygame.Vector2(0,0)
+    move_speed = 7
+    reward = 0
+    game_over = False
+    walls = [] 
 
-    def game_loop(self):
+    def game_loop(self, human = False, move: Move = Move(0,0)):
         # pygame setup
         while self.running:
             for event in pygame.event.get():
@@ -53,22 +57,29 @@ class PySnake:
                     self.running = False
 
                 self.update_screen()
-                self.check_collision()
+                wall_col = self.check_wall_collision(self.player)
+                self.check_food_collision(self.player)
+                self.check_poison_collision(self.player)
                 self.reset_interacts()
-                self.human_input()
+                if human:
+                    self.human_input()
+                else: 
+                    self.ai_input(move)
+                if wall_col and human:
+                    pygame.quit()
         pygame.quit()
 
 
     def human_input(self): 
         keys = pygame.key.get_pressed()
         if keys[pygame.K_w]:
-            self.player_pos.y -= 10 * self.dt
+            self.player_pos.y -= self.move_speed * self.dt
         if keys[pygame.K_s]:
-            self.player_pos.y += 10 * self.dt
+            self.player_pos.y += self.move_speed * self.dt
         if keys[pygame.K_a]:
-            self.player_pos.x -= 10 * self.dt
+            self.player_pos.x -= self.move_speed * self.dt
         if keys[pygame.K_d]:
-            self.player_pos.x += 10 * self.dt
+            self.player_pos.x += self.move_speed * self.dt
         
         pygame.display.flip()
         
@@ -77,27 +88,46 @@ class PySnake:
 
     def ai_input(self,move: Move):
         x,y = move.get_pos()
-        self.player_pos.y += y * 10 *self.dt
-        self.player_pos.x += x * 10 *self.dt
+        self.player_pos.y += float(y * self.move_speed * self.dt)
+        self.player_pos.x += float(x * self.move_speed * self.dt)
 
-    def check_collision(self):
-        if self.player.collidelist(self.walls) != -1:
-            pygame.quit()
-        
-        if self.has_food and self.player.collideobjects([self.food]) != None:
+    def ai_step(self, move: Move):
+        self.reward = 0
+        self.game_loop(False,move)
+
+        return (self.reward, self.game_over, self.player_size)
+
+    def check_wall_collision(self, rect: pygame.Rect):
+        if rect.collidelist(self.walls) != -1:
+            self.game_over = True
+            self.reward = -1000
+            return True
+        return False
+
+    def check_food_collision(self, rect: pygame.Rect):   
+        if self.has_food and rect.collideobjects([self.food]) != None:
             self.player_size += 5
+            self.reward = 10
             self.has_food = False
+            return True
+        return False
         
-        if self.has_poison and self.player.collideobjects([self.poison]) != None:
+    def check_poison_collision(self, rect: pygame.Rect):   
+        if self.has_poison and rect.collideobjects([self.poison]) != None:
             self.player_size -= 5
+            self.reward = -10
             if self.player_size < 0:
                 pygame.quit()
             self.has_poison = False
+            return True
+        return False
+
+    def create_rect_from_vec2(self, vec: pygame.Vector2, size):
+        return pygame.Rect(vec.x,vec.y,size,size)
 
     def update_screen(self):
         self.screen.fill("black")
 
-        self.walls = [] 
         self.walls.append(pygame.draw.line(self.screen, "red", (0,self.screen_height) , (self.screen_width,self.screen_height),5))
         self.walls.append(pygame.draw.line(self.screen, "red", (0,0) , (0,self.screen_height),5))
         self.walls.append(pygame.draw.line(self.screen, "red", (0,0) , (self.screen_width,0),5))
