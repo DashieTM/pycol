@@ -108,7 +108,8 @@ class Agent:
                 predicted_move[1] = 1
             elif x == 1:
                 predicted_move[2] = 1
-            elif y == -1:
+
+            if y == -1:
                 predicted_move[3] = 1
             elif y == 0:
                 predicted_move[4] = 1
@@ -119,9 +120,9 @@ class Agent:
             prediction = self.model(current_state)
             # TODO how maek both direction?
             pred_x = torch.argmax(prediction).item()
-            pred_y = torch.argmax(prediction).item()
+            # pred_y = torch.argmax(prediction).item()
             predicted_move[pred_x] = 1
-            predicted_move[pred_y] = 1
+            # predicted_move[pred_y] = 1
         return predicted_move 
 
 def train():
