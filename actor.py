@@ -94,18 +94,27 @@ class Agent:
         self.trainer.train_step(state, action, reward, next_state, done)
         pass
 
-    def get_action(self, state) -> Move:
+    def get_action(self, state) -> list[int]:
         self.epsilon = 80 - self.game_amount
-        x = 0
-        y = 0
+        predicted_move = [0,0,0,0,0,0]
+        # 0 0 0 0 0 0 -> first 3 change of x
+        # -1 0 1 
         if random.randint(0, 200) < self.epsilon:
             x = random.randint(-1,1)
             y = random.randint(-1,1)
-            return Move(x,y)
+            if x == -1:
+                predicted_move[0] = 1
+            elif x == 0:
+                predicted_move[1] = 1
+            elif x == 1:
+                predicted_move[2] = 1
+            elif y == -1:
+                predicted_move[3] = 1
+            elif y == 0:
+                predicted_move[4] = 1
+            elif y == 1:
+                predicted_move[5] = 1
         else:
-            predicted_move = [0,0,0,0,0,0]
-            # 0 0 0 0 0 0 -> first 3 change of x
-            # -1 0 1 
             current_state = torch.tensor(state, dtype=torch.float)
             prediction = self.model(current_state)
             # TODO how maek both direction?
@@ -113,12 +122,12 @@ class Agent:
             pred_y = torch.argmax(prediction).item()
             predicted_move[pred_x] = 1
             predicted_move[pred_y] = 1
-            return to_move(list) 
+        return predicted_move 
 
 def train():
     scores = []
     # mean_scores = []
-    current_score = 0
+    # current_score = 0
     best_score = 0
     agent = Agent()
     game = PySnake() 
@@ -134,17 +143,19 @@ def train():
         state_new = agent.get_state(game)
 
         # train short memory
-        agent.train_short_memory(current_state, to_list(move), reward, state_new, done)
+        agent.train_short_memory(current_state, move, reward, state_new, done)
 
         # remember
-        agent.remember(current_state, to_list(move), reward, state_new, done)
+        agent.remember(current_state, move, reward, state_new, done)
 
         if done:
             # train long memory, plot result
             # game.reset()
-            game = PySnake()
+            game.reset()
             agent.game_amount += 1
             agent.train_long_memory()
+            
+            score -= 10
 
             if score > best_score:
                 best_score = score
@@ -154,17 +165,17 @@ def train():
 
             scores.append(score)
             print('All scores', scores)
-            current_score += score
+            # current_score += score
             # mean_score = current_score / agent.game_amount
             # plot_mean_scores.append(mean_score)
             # plot(plot_scores, plot_mean_scores)
 
-def to_move(list) -> Move:
-    return Move(list[0], list[1])
-
-def to_list(move: Move):
-    x,y = move.get_pos()
-    return [x,y]
+# def to_move(entered_list: list[int]) -> Move:
+#     return Move(entered_list[0], entered_list[1])
+#
+# def to_list(move: Move) -> list[int]:
+#     x,y = move.get_pos()
+#     return [x,y]
 
 if __name__ == '__main__':
     train()
