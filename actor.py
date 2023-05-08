@@ -23,55 +23,55 @@ from model import Linear_QNet, QTrainer
 
 MAX_MEMORY = 100_000
 BATCH_SIZE = 1000
-LEARNINGRATE = 0.001
+LEARNINGRATE = 0.1
 
 
 class Agent:
 
     def __init__(self) -> None:
         self.game_amount = 0
-        self.epsilon = 0 # controls randomness
-        self.gamma = 0.9 #discount
+        self.epsilon = 0.2 # controls randomness
+        self.gamma = 0.2 #discount
         self.memory = deque(maxlen=MAX_MEMORY)
-        self.model = Linear_QNet(28, 256, 4)
+        self.model = Linear_QNet(16, 256, 4)
         self.trainer = QTrainer(self.model, lr=LEARNINGRATE, gamma=self.gamma)
         # if memory exceeded automatically removes it on the left
 
     def get_state(self, game: PySnake):
         up = game.create_rect_from_vec2(pygame.Vector2(game.player_pos.x , game.player_pos.y + game.move_speed  ), game.player_size)
-        up_right = game.create_rect_from_vec2(pygame.Vector2(game.player_pos.x + game.move_speed , game.player_pos.y + game.move_speed  ), game.player_size)
-        up_left = game.create_rect_from_vec2(pygame.Vector2(game.player_pos.x - game.move_speed , game.player_pos.y + game.move_speed  ), game.player_size)
+        # up_right = game.create_rect_from_vec2(pygame.Vector2(game.player_pos.x + game.move_speed , game.player_pos.y + game.move_speed  ), game.player_size)
+        # up_left = game.create_rect_from_vec2(pygame.Vector2(game.player_pos.x - game.move_speed , game.player_pos.y + game.move_speed  ), game.player_size)
         right = game.create_rect_from_vec2(pygame.Vector2(game.player_pos.x + game.move_speed , game.player_pos.y ), game.player_size)
         down = game.create_rect_from_vec2(pygame.Vector2(game.player_pos.x , game.player_pos.y - game.move_speed  ), game.player_size)
-        down_right = game.create_rect_from_vec2(pygame.Vector2(game.player_pos.x + game.move_speed , game.player_pos.y - game.move_speed  ), game.player_size)
-        down_left = game.create_rect_from_vec2(pygame.Vector2(game.player_pos.x - game.move_speed , game.player_pos.y - game.move_speed  ), game.player_size)
+        # down_right = game.create_rect_from_vec2(pygame.Vector2(game.player_pos.x + game.move_speed , game.player_pos.y - game.move_speed  ), game.player_size)
+        # down_left = game.create_rect_from_vec2(pygame.Vector2(game.player_pos.x - game.move_speed , game.player_pos.y - game.move_speed  ), game.player_size)
         left = game.create_rect_from_vec2(pygame.Vector2(game.player_pos.x - game.move_speed , game.player_pos.y ), game.player_size)
         state = [
             game.check_wall_collision(up),
-            game.check_wall_collision(up_right),
-            game.check_wall_collision(up_left),
+            # game.check_wall_collision(up_right),
+            # game.check_wall_collision(up_left),
             game.check_wall_collision(right),
             game.check_wall_collision(down),
-            game.check_wall_collision(down_right),
-            game.check_wall_collision(down_left),
+            # game.check_wall_collision(down_right),
+            # game.check_wall_collision(down_left),
             game.check_wall_collision(left),
 
             game.check_food_collision(up),
-            game.check_food_collision(up_right),
-            game.check_food_collision(up_left),
+            # game.check_food_collision(up_right),
+            # game.check_food_collision(up_left),
             game.check_food_collision(right),
             game.check_food_collision(down),
-            game.check_food_collision(down_right),
-            game.check_food_collision(down_left),
+            # game.check_food_collision(down_right),
+            # game.check_food_collision(down_left),
             game.check_food_collision(left),
 
             game.check_poison_collision(up),
-            game.check_poison_collision(up_right),
-            game.check_poison_collision(up_left),
+            # game.check_poison_collision(up_right),
+            # game.check_poison_collision(up_left),
             game.check_poison_collision(right),
             game.check_poison_collision(down),
-            game.check_poison_collision(down_right),
-            game.check_poison_collision(down_left),
+            # game.check_poison_collision(down_right),
+            # game.check_poison_collision(down_left),
             game.check_poison_collision(left),
 
             game.player_pos.x < game.food_pos.x,
@@ -105,26 +105,18 @@ class Agent:
         pass
 
     def get_action(self, state) -> list[int]:
-        self.epsilon = 80 - self.game_amount
         predicted_move = [0,0,0,0]
         # 0 0 0 0 0 0 -> first 3 change of x
         # -1 0 1 
-        if random.randint(0, 200) < self.epsilon:
-
-            x = random.randint(-1,1)
-            y = random.randint(-1,1)
-            if x == -1:
+        if random.randint(0 , 100) < int(100 * self.epsilon):
+            x = random.randint(0,4)
+            if x == 0:
                 predicted_move[0] = 1
-            # elif x == 0:
-            #     predicted_move[1] = 1
-            elif x == 1:
+            elif x == 2:
                 predicted_move[1] = 1
-
-            if y == -1:
+            elif x == 3:
                 predicted_move[2] = 1
-            # elif y == 0:
-            #     predicted_move[4] = 1
-            elif y == 1:
+            elif x == 4:
                 predicted_move[3] = 1
         else:
             current_state = torch.tensor(state, dtype=torch.float)
@@ -134,12 +126,14 @@ class Agent:
             # pred_y = torch.argmax(prediction).item()
             predicted_move[pred_x] = 1
             # predicted_move[pred_y] = 1
+        # self.epsilon -= 0.001
         return predicted_move 
 
 def train():
     scores = []
     # mean_scores = []
     # current_score = 0
+    total_reward = 0
     best_score = 0
     agent = Agent()
     game = PySnake()
@@ -154,6 +148,8 @@ def train():
         reward, done, score = game.ai_step(move)
 
         state_new = agent.get_state(game)
+
+        total_reward += reward
 
         # train short memory
         agent.train_short_memory(current_state, move, reward, state_new, done)
@@ -174,10 +170,13 @@ def train():
                 best_score = score
                 agent.model.save()
 
-            print('Game', agent.game_amount, 'Score', score, 'Record:', best_score)
+            print('Game', agent.game_amount,'Reward', total_reward,'Epsilon', agent.epsilon, 'Score', score, 'Record:', best_score)
 
             scores.append(score)
             print('All scores', scores)
+            total_reward = 0
+            if agent.epsilon >= 0.0001:
+                agent.epsilon -= 0.0001
             # current_score += score
             # mean_score = current_score / agent.game_amount
             # plot_mean_scores.append(mean_score)

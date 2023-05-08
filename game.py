@@ -67,17 +67,16 @@ class PySnake:
                     break
 
             self.update_screen()
-            self.reward = -1
             if self.check_wall_collision(self.player):
                 self.game_over = True
-                self.reward = -1000
+                self.reward = -10000
             if self.check_food_collision(self.player):
                 self.player_size += 5
-                self.reward = 10
+                self.reward = 1000
                 self.has_food = False
             if self.check_poison_collision(self.player):
                 self.player_size -= 5
-                self.reward = -10
+                self.reward = -1000
                 if self.player_size <= 0:
                     self.game_over = True
                 self.has_poison = False
