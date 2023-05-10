@@ -30,7 +30,7 @@ class Agent:
 
     def __init__(self) -> None:
         self.game_amount = 0
-        self.epsilon = 0.2 # controls randomness
+        self.epsilon = 0.8 # controls randomness
         self.gamma = 0.2 #discount
         self.memory = deque(maxlen=MAX_MEMORY)
         self.model = Linear_QNet(16, 256, 4)
@@ -175,8 +175,8 @@ def train():
             scores.append(score)
             print('All scores', scores)
             total_reward = 0
-            if agent.epsilon >= 0.0001:
-                agent.epsilon -= 0.0001
+            if agent.epsilon >= 0.05:
+                agent.epsilon -= 0.01
             # current_score += score
             # mean_score = current_score / agent.game_amount
             # plot_mean_scores.append(mean_score)
