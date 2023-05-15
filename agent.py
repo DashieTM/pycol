@@ -21,18 +21,18 @@ from collections import deque
 from game import PySnake, Move
 from model import Linear_QNet, QTrainer
 
-MAX_MEMORY = 100_000
+MAX_MEMORY = 10_000
 BATCH_SIZE = 1000
-LEARNINGRATE = 0.2
+LEARNINGRATE = 0.3
 
 class Agent:
 
     def __init__(self) -> None:
         self.game_amount = 0
         self.epsilon = 0.6 # controls randomness
-        self.gamma = 0.2 # discount
+        self.gamma = 0.9 # discount
         self.memory = deque(maxlen=MAX_MEMORY)
-        self.model = Linear_QNet(24, 256, 4)
+        self.model = Linear_QNet(37, 256, 4)
         self.trainer = QTrainer(self.model, lr=LEARNINGRATE, gamma=self.gamma)
         # if memory exceeded automatically removes it on the left
 
@@ -59,34 +59,36 @@ class Agent:
             game.check_poison_collision(left),
 
             game.player_pos.x < game.food_pos[0].x,
-            #game.player_pos.x > game.food_pos[0].x,
+            game.player_pos.x == game.food_pos[0].x,
             game.player_pos.y < game.food_pos[0].y,
-            #game.player_pos.y > game.food_pos[0].y,
+            game.player_pos.y == game.food_pos[0].y,
 
             game.player_pos.x < game.food_pos[1].x,
-            #game.player_pos.x > game.food_pos[1].x,
+            game.player_pos.x == game.food_pos[1].x,
             game.player_pos.y < game.food_pos[1].y,
-            #game.player_pos.y > game.food_pos[1].y,
+            game.player_pos.y == game.food_pos[1].y,
 
             game.player_pos.x < game.food_pos[2].x,
-            #game.player_pos.x > game.food_pos[2].x,
+            game.player_pos.x == game.food_pos[2].x,
             game.player_pos.y < game.food_pos[2].y,
-            #game.player_pos.y > game.food_pos[2].y,
+            game.player_pos.y == game.food_pos[2].y,
 
             game.player_pos.x < game.poison_pos[0].x,
-            #game.player_pos.x > game.poison_pos[0].x,
+            game.player_pos.x == game.poison_pos[0].x,
             game.player_pos.y < game.poison_pos[0].y,
-            #game.player_pos.y > game.poison_pos[0].y,
+            game.player_pos.y == game.poison_pos[0].y,
 
             game.player_pos.x < game.poison_pos[1].x,
-            #game.player_pos.x > game.poison_pos[1].x,
+            game.player_pos.x == game.poison_pos[1].x,
             game.player_pos.y < game.poison_pos[1].y,
-            #game.player_pos.y > game.poison_pos[1].y,
+            game.player_pos.y == game.poison_pos[1].y,
 
             game.player_pos.x < game.poison_pos[2].x,
-            #game.player_pos.x > game.poison_pos[2].x,
+            game.player_pos.x == game.poison_pos[2].x,
             game.player_pos.y < game.poison_pos[2].y,
-            #game.player_pos.y > game.poison_pos[2].y,
+            game.player_pos.y == game.poison_pos[2].y,
+
+            not game.has_food or not game.has_poison,
         ]
 
         return np.array(state, dtype=int)
@@ -100,8 +102,8 @@ class Agent:
         else:
             mini_sample = self.memory
 
-        states, actions, rewards, next_states, game_overs = zip(*mini_sample)
-        self.trainer.train_step(states, actions, rewards, next_states, game_overs)
+        states, actions, rewards, next_states, game_over = zip(*mini_sample)
+        self.trainer.train_step(states, actions, rewards, next_states, game_over)
 
     def train_short_memory(self, state, action, reward, next_state, game_over):
         self.trainer.train_step(state, action, reward, next_state, game_over)
