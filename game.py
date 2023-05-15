@@ -19,9 +19,9 @@ import random
 pygame.init()
 
 class Move:
-    # 0 means no change
-    # 1 means positive change -> up or right
-    # -1 means negative change -> down or left
+    # 0 = no change
+    # 1 = positive change -> up or right
+    # -1 = negative change -> down or left
     x = 0
     y = 0
 
@@ -35,7 +35,7 @@ class Move:
 class PySnake:
     # pygame.init()
     def __init__(self):
-        self.screen = pygame.display.set_mode((1920, 1080))
+        self.screen = pygame.display.set_mode((1280, 720))
         self.clock = pygame.time.Clock()
         self.dt = 1
         self.screen_width = self.screen.get_width()
@@ -107,14 +107,10 @@ class PySnake:
     def ai_input(self,move: list[int]):
         if move[0] == 1:
             self.player_pos.x -= float(self.move_speed * self.dt)
-        # elif move[1] == 1:
-        #     return
         elif move[1] == 1:
             self.player_pos.x += float(self.move_speed * self.dt)
         if move[2] == 1:
             self.player_pos.y -= float(self.move_speed * self.dt)
-        # elif move[4] == 1:
-        #     return
         elif move[3] == 1:
             self.player_pos.y += float(self.move_speed * self.dt)
 
