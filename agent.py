@@ -23,7 +23,7 @@ from model import Linear_QNet, QTrainer
 
 MAX_MEMORY = 100_000
 BATCH_SIZE = 1000
-LEARNINGRATE = 0.1
+LEARNINGRATE = 0.2
 
 class Agent:
 
@@ -32,15 +32,15 @@ class Agent:
         self.epsilon = 0.8 # controls randomness
         self.gamma = 0.2 # discount
         self.memory = deque(maxlen=MAX_MEMORY)
-        self.model = Linear_QNet(16, 256, 4)
+        self.model = Linear_QNet(20, 256, 4)
         self.trainer = QTrainer(self.model, lr=LEARNINGRATE, gamma=self.gamma)
         # if memory exceeded automatically removes it on the left
 
     def get_state(self, game: PySnake):
-        up = game.create_rect_from_vec2(pygame.Vector2(game.player_pos.x , game.player_pos.y + game.move_speed  ), game.player_size)
-        right = game.create_rect_from_vec2(pygame.Vector2(game.player_pos.x + game.move_speed , game.player_pos.y ), game.player_size)
-        down = game.create_rect_from_vec2(pygame.Vector2(game.player_pos.x , game.player_pos.y - game.move_speed  ), game.player_size)
-        left = game.create_rect_from_vec2(pygame.Vector2(game.player_pos.x - game.move_speed , game.player_pos.y ), game.player_size)
+        up = game.create_rect_from_vec2(pygame.Vector2(game.player_pos.x, game.player_pos.y + game.move_speed), game.player_size)
+        right = game.create_rect_from_vec2(pygame.Vector2(game.player_pos.x + game.move_speed, game.player_pos.y), game.player_size)
+        down = game.create_rect_from_vec2(pygame.Vector2(game.player_pos.x, game.player_pos.y - game.move_speed), game.player_size)
+        left = game.create_rect_from_vec2(pygame.Vector2(game.player_pos.x - game.move_speed, game.player_pos.y), game.player_size)
 
         state = [
             game.check_wall_collision(up),
@@ -63,11 +63,12 @@ class Agent:
             game.player_pos.y < game.food_pos.y,
             game.player_pos.y > game.food_pos.y,
 
-            # game.player_pos.x < game.poison_pos.x,
-            # game.player_pos.x > game.poison_pos.x,
-            # game.player_pos.y < game.poison_pos.y,
-            # game.player_pos.y > game.poison_pos.y,
+            game.player_pos.x < game.poison_pos.x,
+            game.player_pos.x > game.poison_pos.x,
+            game.player_pos.y < game.poison_pos.y,
+            game.player_pos.y > game.poison_pos.y
         ]
+
         return np.array(state, dtype=int)
 
     def remember(self,state,action,reward,next_state,done):
@@ -90,24 +91,20 @@ class Agent:
         predicted_move = [0,0,0,0]
 
         if random.randint(0 , 100) < int(100 * self.epsilon):
-            x = random.randint(0,4)
+            x = random.randint(0,3)
             if x == 0:
                 predicted_move[0] = 1
-            elif x == 2:
+            elif x == 1:
                 predicted_move[1] = 1
-            elif x == 3:
+            elif x == 2:
                 predicted_move[2] = 1
-            elif x == 4:
+            elif x == 3:
                 predicted_move[3] = 1
         else:
             current_state = torch.tensor(state, dtype=torch.float)
-            prediction = self.model(current_state)
-            # TODO how make both direction?
-            pred_x = torch.argmax(prediction).item()
-            # pred_y = torch.argmax(prediction).item()
-            predicted_move[pred_x] = 1
-            # predicted_move[pred_y] = 1
-        # self.epsilon -= 0.001
+            prediction = self.model.forward(current_state)
+            prediction = torch.argmax(prediction).item()
+            predicted_move[prediction] = 1
 
         return predicted_move 
 
@@ -117,6 +114,7 @@ def train():
     best_score = 0
     agent = Agent()
     game = PySnake()
+
     while(True):
         # get old state
         current_state = agent.get_state(game)
@@ -139,7 +137,6 @@ def train():
 
         if done:
             # train long memory, plot result
-            # game.reset()
             game.reset()
             agent.game_amount += 1
             agent.train_long_memory()
