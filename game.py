@@ -45,8 +45,10 @@ class PySnake:
     
     def reset(self):
         self.player_pos = pygame.Vector2(self.screen_width / 2, self.screen_height / 2)
+        self.last_pos = pygame.Vector2(0,0)
         self.food_pos = pygame.Vector2(0,0)
         self.poison_pos = pygame.Vector2(0,0)
+        self.best_action = 0
         self.reward = 0
         self.walls = [] 
         self.food = None
@@ -67,24 +69,25 @@ class PySnake:
                     break
 
             self.update_screen()
-            if self.check_wall_collision(self.player):
-                self.game_over = True
-                self.reward = -10000
-            if self.check_food_collision(self.player):
-                self.player_size += 5
-                self.reward = 1000
-                self.has_food = False
-            if self.check_poison_collision(self.player):
-                self.player_size -= 5
-                self.reward = -1000
-                if self.player_size <= 0:
-                    self.game_over = True
-                self.has_poison = False
-            self.reset_interacts()
             if human:
                 self.human_input()
             else: 
                 self.ai_input(move)
+            if self.check_wall_collision(self.player):
+                self.game_over = True
+                self.reward = -500
+            if self.check_food_collision(self.player):
+                self.player_size += 5
+                self.reward = 100
+                self.has_food = False
+            # if self.check_poison_collision(self.player):
+            #     self.player_size -= 5
+            #     self.reward = -100
+            #     if self.player_size <= 0:
+            #         self.game_over = True
+            #     self.has_poison = False
+            self.reset_interacts()
+            self.next_shortest()
             if not human:
                 return
         pygame.quit()
@@ -105,20 +108,27 @@ class PySnake:
         
 
     def ai_input(self,move: list[int]):
+        move_taken = 0
         if move[0] == 1:
-            self.player_pos.x -= float(self.move_speed * self.dt)
-        # elif move[1] == 1:
-        #     return
+            self.player_pos.y -= float(self.move_speed * self.dt)
         elif move[1] == 1:
             self.player_pos.x += float(self.move_speed * self.dt)
-        if move[2] == 1:
-            self.player_pos.y -= float(self.move_speed * self.dt)
-        # elif move[4] == 1:
-        #     return
-        elif move[3] == 1:
+            move_taken = 1
+        elif move[2] == 1:
             self.player_pos.y += float(self.move_speed * self.dt)
+            move_taken = 2
+        elif move[3] == 1:
+            self.player_pos.x -= float(self.move_speed * self.dt)
+            move_taken = 3
+        if move_taken == self.best_action:
+            self.reward += 1
+        else:
+            self.reward -= 2
+        # print("best move: ", self.best_action, "move_taken:", move_taken)
 
     def ai_step(self, move: list[int]):
+        self.last_pos.x = self.player_pos.x 
+        self.last_pos.y = self.player_pos.y
         self.reward = 0
         self.game_loop(False,move)
 
@@ -134,10 +144,10 @@ class PySnake:
             return True
         return False
         
-    def check_poison_collision(self, rect: pygame.Rect):   
-        if self.has_poison and self.poison != None and rect.collideobjects([self.poison]) != None:
-            return True
-        return False
+    # def check_poison_collision(self, rect: pygame.Rect):   
+    #     if self.has_poison and self.poison != None and rect.collideobjects([self.poison]) != None:
+    #         return True
+    #     return False
 
     def create_rect_from_vec2(self, vec: pygame.Vector2, size):
         return pygame.Rect(vec.x,vec.y,size,size)
@@ -158,9 +168,9 @@ class PySnake:
         if self.has_food:
             self.food = pygame.draw.circle(self.screen, "green", self.food_pos, 20)
         
-        self.poison = None
-        if self.has_poison:
-            self.poison = pygame.draw.circle(self.screen, "red", self.poison_pos, 20)
+        # self.poison = None
+        # if self.has_poison:
+        #     self.poison = pygame.draw.circle(self.screen, "red", self.poison_pos, 20)
 
         pygame.display.flip()
         self.clock.tick(60)
@@ -168,11 +178,24 @@ class PySnake:
 
     def reset_interacts(self):
         if not self.has_food:
-            self.food_pos = pygame.Vector2(random.randint(0,self.screen.get_width()), random.randint(0,self.screen.get_height()))
+            self.food_pos = pygame.Vector2(random.randint(40,self.screen.get_width() - 40), random.randint(40,self.screen.get_height() - 40))
             self.has_food = True
 
-        if not self.has_poison:
-            self.poison_pos = pygame.Vector2(random.randint(0,self.screen.get_width()), random.randint(0,self.screen.get_height()))
-            self.has_poison = True
+        # if not self.has_poison:
+        #     self.poison_pos = pygame.Vector2(random.randint(40,self.screen.get_width() - 40), random.randint(40,self.screen.get_height() - 40))
+        #     self.has_poison = True
 
-
+    def next_shortest(self):
+        up = pygame.Vector2(self.player_pos.x, self.player_pos.y - float(self.move_speed * self.dt)).distance_to(self.food_pos)
+        right = pygame.Vector2(self.player_pos.x + float(self.move_speed * self.dt), self.player_pos.y).distance_to(self.food_pos)
+        down = pygame.Vector2(self.player_pos.x, self.player_pos.y + float(self.move_speed * self.dt)).distance_to(self.food_pos)
+        left = pygame.Vector2(self.player_pos.x - float(self.move_speed * self.dt), self.player_pos.y).distance_to(self.food_pos)
+        mindist = min(up, right, down, left)
+        if up == mindist:
+            self.best_action = 0
+        elif right == mindist:
+            self.best_action = 1
+        elif down == mindist:
+            self.best_action = 2
+        elif left == mindist:
+            self.best_action = 3

@@ -30,60 +30,49 @@ class Agent:
 
     def __init__(self) -> None:
         self.game_amount = 0
-        self.epsilon = 0.8 # controls randomness
-        self.gamma = 0.2 #discount
+        self.epsilon = 0.5 # controls randomness
+        self.gamma = 0.8 #discount rate
         self.memory = deque(maxlen=MAX_MEMORY)
-        self.model = Linear_QNet(16, 256, 4)
+        self.model = Linear_QNet(8, 256, 4)
         self.trainer = QTrainer(self.model, lr=LEARNINGRATE, gamma=self.gamma)
         # if memory exceeded automatically removes it on the left
 
     def get_state(self, game: PySnake):
-        up = game.create_rect_from_vec2(pygame.Vector2(game.player_pos.x , game.player_pos.y + game.move_speed  ), game.player_size)
-        # up_right = game.create_rect_from_vec2(pygame.Vector2(game.player_pos.x + game.move_speed , game.player_pos.y + game.move_speed  ), game.player_size)
-        # up_left = game.create_rect_from_vec2(pygame.Vector2(game.player_pos.x - game.move_speed , game.player_pos.y + game.move_speed  ), game.player_size)
-        right = game.create_rect_from_vec2(pygame.Vector2(game.player_pos.x + game.move_speed , game.player_pos.y ), game.player_size)
-        down = game.create_rect_from_vec2(pygame.Vector2(game.player_pos.x , game.player_pos.y - game.move_speed  ), game.player_size)
-        # down_right = game.create_rect_from_vec2(pygame.Vector2(game.player_pos.x + game.move_speed , game.player_pos.y - game.move_speed  ), game.player_size)
-        # down_left = game.create_rect_from_vec2(pygame.Vector2(game.player_pos.x - game.move_speed , game.player_pos.y - game.move_speed  ), game.player_size)
-        left = game.create_rect_from_vec2(pygame.Vector2(game.player_pos.x - game.move_speed , game.player_pos.y ), game.player_size)
+        upvec = pygame.Vector2(game.player_pos.x , game.player_pos.y - game.move_speed  )
+        rightvec = pygame.Vector2(game.player_pos.x + game.move_speed , game.player_pos.y )
+        downvec = pygame.Vector2(game.player_pos.x , game.player_pos.y + game.move_speed  )
+        leftvec = pygame.Vector2(game.player_pos.x - game.move_speed , game.player_pos.y )
+        up = game.create_rect_from_vec2(upvec, game.player_size)
+        right = game.create_rect_from_vec2(rightvec, game.player_size)
+        down = game.create_rect_from_vec2(downvec, game.player_size)
+        left = game.create_rect_from_vec2(leftvec, game.player_size)
         state = [
             game.check_wall_collision(up),
-            # game.check_wall_collision(up_right),
-            # game.check_wall_collision(up_left),
             game.check_wall_collision(right),
             game.check_wall_collision(down),
-            # game.check_wall_collision(down_right),
-            # game.check_wall_collision(down_left),
             game.check_wall_collision(left),
 
-            game.check_food_collision(up),
-            # game.check_food_collision(up_right),
-            # game.check_food_collision(up_left),
-            game.check_food_collision(right),
-            game.check_food_collision(down),
-            # game.check_food_collision(down_right),
-            # game.check_food_collision(down_left),
-            game.check_food_collision(left),
+            # game.check_food_collision(up),
+            # game.check_food_collision(right),
+            # game.check_food_collision(down),
+            # game.check_food_collision(left),
 
-            game.check_poison_collision(up),
-            # game.check_poison_collision(up_right),
-            # game.check_poison_collision(up_left),
-            game.check_poison_collision(right),
-            game.check_poison_collision(down),
-            # game.check_poison_collision(down_right),
-            # game.check_poison_collision(down_left),
-            game.check_poison_collision(left),
+            # game.check_poison_collision(up),
+            # game.check_poison_collision(right),
+            # game.check_poison_collision(down),
+            # game.check_poison_collision(left),
+
+            # game.player_pos.x,
+            # game.player_pos.y,
+            # game.food_pos.x,
+            # game.food_pos.y,
+            # game.player_pos.distance_to(game.food_pos),
 
             game.player_pos.x < game.food_pos.x,
             game.player_pos.x > game.food_pos.x,
             game.player_pos.y < game.food_pos.y,
             game.player_pos.y > game.food_pos.y,
-
-            # game.player_pos.x < game.poison_pos.x,
-            # game.player_pos.x > game.poison_pos.x,
-            # game.player_pos.y < game.poison_pos.y,
-            # game.player_pos.y > game.poison_pos.y,
-        ]
+        ] # all bools
         return np.array(state, dtype=int)
 
     def remember(self,state,action,reward,next_state,done):
@@ -102,37 +91,31 @@ class Agent:
 
     def train_short_memory(self,state,action,reward,next_state,done):
         self.trainer.train_step(state, action, reward, next_state, done)
-        pass
 
-    def get_action(self, state) -> list[int]:
+    def get_action(self, state, game: PySnake) -> list[int]:
         predicted_move = [0,0,0,0]
-        # 0 0 0 0 0 0 -> first 3 change of x
-        # -1 0 1 
+        # 0 0 0 0 -> 1 0 0 0 up -> 0 1 0 0 -> right 0 0 1 0 -> down 0 0 0 1 -> left 
         if random.randint(0 , 100) < int(100 * self.epsilon):
-            x = random.randint(0,4)
+            # x = game.best_action 
+            # this would make the ai actually good lol
+            x = random.randint(0,3)
             if x == 0:
                 predicted_move[0] = 1
-            elif x == 2:
+            elif x == 1:
                 predicted_move[1] = 1
-            elif x == 3:
+            elif x == 2:
                 predicted_move[2] = 1
-            elif x == 4:
+            elif x == 3:
                 predicted_move[3] = 1
         else:
             current_state = torch.tensor(state, dtype=torch.float)
             prediction = self.model(current_state)
-            # TODO how maek both direction?
             pred_x = torch.argmax(prediction).item()
-            # pred_y = torch.argmax(prediction).item()
             predicted_move[pred_x] = 1
-            # predicted_move[pred_y] = 1
-        # self.epsilon -= 0.001
         return predicted_move 
 
 def train():
     scores = []
-    # mean_scores = []
-    # current_score = 0
     total_reward = 0
     best_score = 0
     agent = Agent()
@@ -142,24 +125,23 @@ def train():
         current_state = agent.get_state(game)
 
         # get move
-        move = agent.get_action(current_state)
+        move = agent.get_action(current_state, game)
 
         # perform move and get new state
         reward, done, score = game.ai_step(move)
 
-        state_new = agent.get_state(game)
+        next_state = agent.get_state(game)
 
         total_reward += reward
 
         # train short memory
-        agent.train_short_memory(current_state, move, reward, state_new, done)
+        agent.train_short_memory(current_state, move, reward, next_state, done)
 
         # remember
-        agent.remember(current_state, move, reward, state_new, done)
+        agent.remember(current_state, move, reward, next_state, done)
 
         if done:
             # train long memory, plot result
-            # game.reset()
             game.reset()
             agent.game_amount += 1
             agent.train_long_memory()
@@ -175,19 +157,10 @@ def train():
             scores.append(score)
             print('All scores', scores)
             total_reward = 0
-            if agent.epsilon >= 0.05:
+            if agent.epsilon >= 0.001:
                 agent.epsilon -= 0.01
-            # current_score += score
-            # mean_score = current_score / agent.game_amount
-            # plot_mean_scores.append(mean_score)
-            # plot(plot_scores, plot_mean_scores)
-
-# def to_move(entered_list: list[int]) -> Move:
-#     return Move(entered_list[0], entered_list[1])
-#
-# def to_list(move: Move) -> list[int]:
-#     x,y = move.get_pos()
-#     return [x,y]
+            else: 
+                agent.epsilon = 0
 
 if __name__ == '__main__':
     train()
