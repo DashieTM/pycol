@@ -36,7 +36,7 @@ class PySnake:
     # pygame.init()
     def __init__(self):
         self.screen = pygame.display.set_mode((1280, 720))
-        self.interactables = 2
+        self.interactables = 3
         self.clock = pygame.time.Clock()
         self.dt = 1
         self.screen_width = self.screen.get_width()
@@ -46,8 +46,8 @@ class PySnake:
     
     def reset(self):
         self.player_pos = pygame.Vector2(self.screen_width / 2, self.screen_height / 2)
-        self.food_pos = [pygame.Vector2(0, 0)]
-        self.poison_pos = [pygame.Vector2(0, 0)]
+        self.food_pos = [pygame.Vector2(0, 0), pygame.Vector2(0, 0), pygame.Vector2(0, 0)]
+        self.poison_pos = [pygame.Vector2(0, 0), pygame.Vector2(0, 0), pygame.Vector2(0, 0)]
         self.reward = 0
         self.walls = [] 
         self.food = []
@@ -70,7 +70,7 @@ class PySnake:
 
             if self.check_wall_collision(self.player):
                 self.game_over = True
-                self.reward = -100
+                self.reward = -10
             
             if self.check_food_collision(self.player):
                 self.player_size += 5

@@ -29,10 +29,10 @@ class Agent:
 
     def __init__(self) -> None:
         self.game_amount = 0
-        self.epsilon = 0.8 # controls randomness
+        self.epsilon = 0.6 # controls randomness
         self.gamma = 0.2 # discount
         self.memory = deque(maxlen=MAX_MEMORY)
-        self.model = Linear_QNet(20, 256, 4)
+        self.model = Linear_QNet(36, 256, 4)
         self.trainer = QTrainer(self.model, lr=LEARNINGRATE, gamma=self.gamma)
         # if memory exceeded automatically removes it on the left
 
@@ -58,21 +58,41 @@ class Agent:
             game.check_poison_collision(down),
             game.check_poison_collision(left),
 
-            game.player_pos.x < game.food_pos.x,
-            game.player_pos.x > game.food_pos.x,
-            game.player_pos.y < game.food_pos.y,
-            game.player_pos.y > game.food_pos.y,
+            game.player_pos.x < game.food_pos[0].x,
+            game.player_pos.x > game.food_pos[0].x,
+            game.player_pos.y < game.food_pos[0].y,
+            game.player_pos.y > game.food_pos[0].y,
 
-            game.player_pos.x < game.poison_pos.x,
-            game.player_pos.x > game.poison_pos.x,
-            game.player_pos.y < game.poison_pos.y,
-            game.player_pos.y > game.poison_pos.y
+            game.player_pos.x < game.food_pos[1].x,
+            game.player_pos.x > game.food_pos[1].x,
+            game.player_pos.y < game.food_pos[1].y,
+            game.player_pos.y > game.food_pos[1].y,
+
+            game.player_pos.x < game.food_pos[2].x,
+            game.player_pos.x > game.food_pos[2].x,
+            game.player_pos.y < game.food_pos[2].y,
+            game.player_pos.y > game.food_pos[2].y,
+
+            game.player_pos.x < game.poison_pos[0].x,
+            game.player_pos.x > game.poison_pos[0].x,
+            game.player_pos.y < game.poison_pos[0].y,
+            game.player_pos.y > game.poison_pos[0].y,
+
+            game.player_pos.x < game.poison_pos[1].x,
+            game.player_pos.x > game.poison_pos[1].x,
+            game.player_pos.y < game.poison_pos[1].y,
+            game.player_pos.y > game.poison_pos[1].y,
+
+            game.player_pos.x < game.poison_pos[2].x,
+            game.player_pos.x > game.poison_pos[2].x,
+            game.player_pos.y < game.poison_pos[2].y,
+            game.player_pos.y > game.poison_pos[2].y,
         ]
 
         return np.array(state, dtype=int)
 
-    def remember(self,state,action,reward,next_state,done):
-        self.memory.append((state, action, reward, next_state, done)) # popleft if MAX_MEMORY is reached
+    def memorize(self, state, action, reward, next_state, game_over):
+        self.memory.append((state, action, reward, next_state, game_over)) # popleft if MAX_MEMORY is reached
 
     def train_long_memory(self):
         if len(self.memory) > BATCH_SIZE:
@@ -80,11 +100,11 @@ class Agent:
         else:
             mini_sample = self.memory
 
-        states, actions, rewards, next_states, dones = zip(*mini_sample)
-        self.trainer.train_step(states, actions, rewards, next_states, dones)
+        states, actions, rewards, next_states, game_overs = zip(*mini_sample)
+        self.trainer.train_step(states, actions, rewards, next_states, game_overs)
 
-    def train_short_memory(self,state,action,reward,next_state,done):
-        self.trainer.train_step(state, action, reward, next_state, done)
+    def train_short_memory(self, state, action, reward, next_state, game_over):
+        self.trainer.train_step(state, action, reward, next_state, game_over)
         pass
 
     def get_action(self, state) -> list[int]:
@@ -123,19 +143,19 @@ def train():
         move = agent.get_action(current_state)
 
         # perform move and get new state
-        reward, done, score = game.ai_step(move)
+        reward, game_over, score = game.ai_step(move)
 
-        state_new = agent.get_state(game)
+        next_state = agent.get_state(game)
 
         total_reward += reward
 
         # train short memory
-        agent.train_short_memory(current_state, move, reward, state_new, done)
+        agent.train_short_memory(current_state, move, reward, next_state, game_over)
 
         # remember
-        agent.remember(current_state, move, reward, state_new, done)
+        agent.memorize(current_state, move, reward, next_state, game_over)
 
-        if done:
+        if game_over:
             # train long memory, plot result
             game.reset()
             agent.game_amount += 1
