@@ -32,7 +32,7 @@ class Agent:
         self.epsilon = 0.6 # controls randomness
         self.gamma = 0.2 # discount
         self.memory = deque(maxlen=MAX_MEMORY)
-        self.model = Linear_QNet(36, 256, 4)
+        self.model = Linear_QNet(24, 256, 4)
         self.trainer = QTrainer(self.model, lr=LEARNINGRATE, gamma=self.gamma)
         # if memory exceeded automatically removes it on the left
 
@@ -59,34 +59,34 @@ class Agent:
             game.check_poison_collision(left),
 
             game.player_pos.x < game.food_pos[0].x,
-            game.player_pos.x > game.food_pos[0].x,
+            #game.player_pos.x > game.food_pos[0].x,
             game.player_pos.y < game.food_pos[0].y,
-            game.player_pos.y > game.food_pos[0].y,
+            #game.player_pos.y > game.food_pos[0].y,
 
             game.player_pos.x < game.food_pos[1].x,
-            game.player_pos.x > game.food_pos[1].x,
+            #game.player_pos.x > game.food_pos[1].x,
             game.player_pos.y < game.food_pos[1].y,
-            game.player_pos.y > game.food_pos[1].y,
+            #game.player_pos.y > game.food_pos[1].y,
 
             game.player_pos.x < game.food_pos[2].x,
-            game.player_pos.x > game.food_pos[2].x,
+            #game.player_pos.x > game.food_pos[2].x,
             game.player_pos.y < game.food_pos[2].y,
-            game.player_pos.y > game.food_pos[2].y,
+            #game.player_pos.y > game.food_pos[2].y,
 
             game.player_pos.x < game.poison_pos[0].x,
-            game.player_pos.x > game.poison_pos[0].x,
+            #game.player_pos.x > game.poison_pos[0].x,
             game.player_pos.y < game.poison_pos[0].y,
-            game.player_pos.y > game.poison_pos[0].y,
+            #game.player_pos.y > game.poison_pos[0].y,
 
             game.player_pos.x < game.poison_pos[1].x,
-            game.player_pos.x > game.poison_pos[1].x,
+            #game.player_pos.x > game.poison_pos[1].x,
             game.player_pos.y < game.poison_pos[1].y,
-            game.player_pos.y > game.poison_pos[1].y,
+            #game.player_pos.y > game.poison_pos[1].y,
 
             game.player_pos.x < game.poison_pos[2].x,
-            game.player_pos.x > game.poison_pos[2].x,
+            #game.player_pos.x > game.poison_pos[2].x,
             game.player_pos.y < game.poison_pos[2].y,
-            game.player_pos.y > game.poison_pos[2].y,
+            #game.player_pos.y > game.poison_pos[2].y,
         ]
 
         return np.array(state, dtype=int)
