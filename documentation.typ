@@ -45,6 +45,8 @@ The Agent consists of a single class which is called agent aswell. Besides the m
 
 - Trainer: This field holds an instance of the previously mentioned QTrainer.
 
+#subsubsection[Coding Log]
+
 
 CODING BUGS
 
