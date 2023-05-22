@@ -41,7 +41,7 @@ class PySnake:
         self.dt = 1
         self.screen_width = self.screen.get_width()
         self.screen_height = self.screen.get_height()
-        self.move_speed = 7
+        self.move_speed = 10
         self.reset()
     
     def reset(self):

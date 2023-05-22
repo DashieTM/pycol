@@ -21,18 +21,18 @@ from collections import deque
 from game import PySnake, Move
 from model import Linear_QNet, QTrainer
 
-MAX_MEMORY = 100_000
-BATCH_SIZE = 10_000
+MAX_MEMORY = 10_000
+BATCH_SIZE = 1_000
 LEARNINGRATE = 0.4
 
 class Agent:
 
     def __init__(self) -> None:
         self.game_amount = 0
-        self.epsilon = 0.7 # controls randomness
+        self.epsilon = 0.65 # controls randomness
         self.gamma = 0.2 # discount
         self.memory = deque(maxlen=MAX_MEMORY)
-        self.model = Linear_QNet(33, 256, 4)
+        self.model = Linear_QNet(33, 512, 4)
         self.trainer = QTrainer(self.model, lr=LEARNINGRATE, gamma=self.gamma)
         # if memory exceeded automatically removes it on the left
 
@@ -172,11 +172,14 @@ def train():
             scores.append(score)
             print('All scores', scores)
             total_reward = 0
-            if agent.epsilon >= 0.05:
+            if agent.epsilon >= 0.3:
                 agent.epsilon -= 0.01
+            elif agent.epsilon >= 0.05:
+                agent.epsilon -= 0.005
 
 if __name__ == '__main__':
     train()
 
 
 # TODO: Implement plotting
+# TODO: Simplify obstacles to one of each obstacle again
