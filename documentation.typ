@@ -17,7 +17,7 @@ Like the guy in the tutorial we used Pytorch to design our AI model and Pygame t
 #section[Making Of]
 
 #subsection[The Game]
-We wanted to create our own little game and not just copy the game from the tutorial we watched. Therefore, we designed a two dimensional game where the player is a small ball and has to collect or eat other balls. There are two different types of balls to eat; green and red ones. By collecting a green ball the player grows in size and gets smaller when collecting red balls respectively. If the player has minimal size and collects a red ball the game is over. Touching the wall also ends the game. As the player grows each time eating a green ball it gets more difficult over time to avoid the wall as well as red balls.
+We wanted to create our own little game and not just copy the game from the tutorial we watched. Therefore, we designed a two dimensional game where the player is a small ball and has to collect or eat other balls. There are two different types of balls to eat; green and red ones. By collecting a green ball the player grows in size and gets smaller when collecting red balls respectively. If the player has minimal size and collects a red ball the game is over. Touching the wall also ends the game. As the player grows each time eating a green ball it gets more difficult over time to avoid the wall as well as red balls. It is possible playing the game manually or letting the AI play the game.
 
 #figure(
   image("img/game.png", width: 80%)
@@ -37,7 +37,7 @@ The Agent consists of a single class which is called agent aswell. Besides the m
 
 - Epsilon: Controls how much percent of the AI actions should initially be random rather than predicted by the model. This parameter is important as the AI has no idea what it should do at the beginning. As the AI learns over time this parameter value gets lowered after each game over.
 
-- Gamma: The discount rate is a parameter that determines the relative importance of immediate rewards compared to future rewards. It represents the extent to which the agent values immediate rewards over delayed rewards. A discount rate less than 1 means the agent considers future rewards, while a discount rate closer to 0 places more emphasis on immediate rewards.
+- Gamma: The discount rate is a parameter that determines the relative importance of immediate rewards compared to future rewards. It represents the extent to which the agent values immediate rewards over delayed rewards. A discount rate close to 1 means the agent considers future rewards, while a discount rate closer to 0 places more emphasis on immediate rewards.
 
 - Memory: The memory is represented by a deque datastructure. It is basically the memory of the AI where it can store current states, actions, rewards, next states and if it is currently in game over mode.
 
@@ -45,8 +45,12 @@ The Agent consists of a single class which is called agent aswell. Besides the m
 
 - Trainer: This field holds an instance of the previously mentioned QTrainer.
 
-#subsubsection[Coding Log]
+#subsection[Coding Log]
+We started off implementing our own game which has a similar simplicity to Snake implementation in the tutorial. Implementing a game with Pygame is straightforward. Therefore, we completed our game really fast.
 
+Afterwards, we started implementing our AI. First we copied the whole model and agent code from the tutorial, as we were curious if it would work with our game straight away. But it didn't work immediately of course. The first problem we encountered was, that there was one crucial difference from our game to the tutorial game. The player in the tutorial game moves automatically while in our game input is mandatory to make the player move. Each time an input key is pressed the player moves one step into the respective direction in our game. In the tutorial game the player moves permanently and changes direction each time an input key is pressed to the respective direction. This led to another issue, which was that our game has four different input possibilities (up, right, down and left) instead of two (left and right). This means our AI needs four output layers and not only two.
+
+Those initial problems were sorted out rapidly. We increased the output layers in the Linear_QNet to 4 and changed the method to get the next action accordingly.
 
 CODING BUGS
 
