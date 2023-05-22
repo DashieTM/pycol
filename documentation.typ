@@ -52,6 +52,10 @@ Afterwards, we started implementing our AI. First we copied the whole model and 
 
 Those initial problems were sorted out rapidly. We increased the output layers in the Linear_QNet to 4 and changed the method to get the next action accordingly.
 
+Soon after another problem arose. We noticed that the parameters in the state of the tutorial were substantially different to the ones we actually need. Because the state formation is fundamental for a working AI it is really important to get that right. But we had to find out that it is rather hard to find the optimal parameters for the state.
+
+STATES AND REWARD SHOULD BE LINKED
+
 CODING BUGS
 
 TRYING OUT DIFFERENT VALUES (reward, reward by how close the player is to obstacles)
