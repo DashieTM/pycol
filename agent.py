@@ -21,18 +21,18 @@ from collections import deque
 from game import PySnake, Move
 from model import Linear_QNet, QTrainer
 
-MAX_MEMORY = 10_000
-BATCH_SIZE = 1000
-LEARNINGRATE = 0.3
+MAX_MEMORY = 100_000
+BATCH_SIZE = 10_000
+LEARNINGRATE = 0.4
 
 class Agent:
 
     def __init__(self) -> None:
         self.game_amount = 0
-        self.epsilon = 0.6 # controls randomness
-        self.gamma = 0.9 # discount
+        self.epsilon = 0.7 # controls randomness
+        self.gamma = 0.2 # discount
         self.memory = deque(maxlen=MAX_MEMORY)
-        self.model = Linear_QNet(37, 256, 4)
+        self.model = Linear_QNet(33, 256, 4)
         self.trainer = QTrainer(self.model, lr=LEARNINGRATE, gamma=self.gamma)
         # if memory exceeded automatically removes it on the left
 
@@ -43,51 +43,49 @@ class Agent:
         left = game.create_rect_from_vec2(pygame.Vector2(game.player_pos.x - game.move_speed, game.player_pos.y), game.player_size)
 
         state = [
-            game.check_wall_collision(up),
-            game.check_wall_collision(right),
-            game.check_wall_collision(down),
-            game.check_wall_collision(left),
+            # Check for danger
+            game.check_wall_collision(up) or game.check_poison_collision(up),
+            game.check_wall_collision(right) or game.check_poison_collision(right),
+            game.check_wall_collision(down) or game.check_poison_collision(down),
+            game.check_wall_collision(left) or game.check_poison_collision(left),
 
+            # Check for food
             game.check_food_collision(up),
             game.check_food_collision(right),
             game.check_food_collision(down),
             game.check_food_collision(left),
 
-            game.check_poison_collision(up),
-            game.check_poison_collision(right),
-            game.check_poison_collision(down),
-            game.check_poison_collision(left),
+            int(game.player_pos.x) < (int(game.food_pos[0].x) - 10), # 10 Because enemy size is 20
+            int(game.player_pos.x) in range(int(game.food_pos[0].x) - 10, int(game.food_pos[0].x) + 10),
+            int(game.player_pos.y) < (int(game.food_pos[0].y) - 10),
+            int(game.player_pos.y) in range(int(game.food_pos[0].y) - 10, int(game.food_pos[0].y) + 10),
 
-            game.player_pos.x < game.food_pos[0].x,
-            game.player_pos.x == game.food_pos[0].x,
-            game.player_pos.y < game.food_pos[0].y,
-            game.player_pos.y == game.food_pos[0].y,
+            int(game.player_pos.x) < (int(game.food_pos[1].x) - 10), # 10 Because enemy size is 20
+            int(game.player_pos.x) in range(int(game.food_pos[1].x) - 10, int(game.food_pos[1].x) + 10),
+            int(game.player_pos.y) < (int(game.food_pos[1].y) - 10),
+            int(game.player_pos.y) in range(int(game.food_pos[1].y) - 10, int(game.food_pos[1].y) + 10),
 
-            game.player_pos.x < game.food_pos[1].x,
-            game.player_pos.x == game.food_pos[1].x,
-            game.player_pos.y < game.food_pos[1].y,
-            game.player_pos.y == game.food_pos[1].y,
+            int(game.player_pos.x) < (int(game.food_pos[2].x) - 10), # 10 Because enemy size is 20
+            int(game.player_pos.x) in range(int(game.food_pos[2].x) - 10, int(game.food_pos[2].x) + 10),
+            int(game.player_pos.y) < (int(game.food_pos[2].y) - 10),
+            int(game.player_pos.y) in range(int(game.food_pos[2].y) - 10, int(game.food_pos[2].y) + 10),
 
-            game.player_pos.x < game.food_pos[2].x,
-            game.player_pos.x == game.food_pos[2].x,
-            game.player_pos.y < game.food_pos[2].y,
-            game.player_pos.y == game.food_pos[2].y,
+            int(game.player_pos.x) < (int(game.poison_pos[0].x) - 10),
+            int(game.player_pos.x) in range(int(game.poison_pos[0].x) - 10, int(game.poison_pos[0].x) + 10),
+            int(game.player_pos.y) < (int(game.poison_pos[0].y) - 10),
+            int(game.player_pos.y) in range(int(game.poison_pos[0].y) - 10, int(game.poison_pos[0].y) + 10),
 
-            game.player_pos.x < game.poison_pos[0].x,
-            game.player_pos.x == game.poison_pos[0].x,
-            game.player_pos.y < game.poison_pos[0].y,
-            game.player_pos.y == game.poison_pos[0].y,
+            int(game.player_pos.x) < (int(game.poison_pos[1].x) - 10),
+            int(game.player_pos.x) in range(int(game.poison_pos[1].x) - 10, int(game.poison_pos[1].x) + 10),
+            int(game.player_pos.y) < (int(game.poison_pos[1].y) - 10),
+            int(game.player_pos.y) in range(int(game.poison_pos[1].y) - 10, int(game.poison_pos[1].y) + 10),
 
-            game.player_pos.x < game.poison_pos[1].x,
-            game.player_pos.x == game.poison_pos[1].x,
-            game.player_pos.y < game.poison_pos[1].y,
-            game.player_pos.y == game.poison_pos[1].y,
+            int(game.player_pos.x) < (int(game.poison_pos[2].x) - 10),
+            int(game.player_pos.x) in range(int(game.poison_pos[2].x) - 10, int(game.poison_pos[2].x) + 10),
+            int(game.player_pos.y) < (int(game.poison_pos[2].y) - 10),
+            int(game.player_pos.y) in range(int(game.poison_pos[2].y) - 10, int(game.poison_pos[2].y) + 10),
 
-            game.player_pos.x < game.poison_pos[2].x,
-            game.player_pos.x == game.poison_pos[2].x,
-            game.player_pos.y < game.poison_pos[2].y,
-            game.player_pos.y == game.poison_pos[2].y,
-
+            # check if player has just consumed food or poison
             not game.has_food or not game.has_poison,
         ]
 

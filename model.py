@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
+import numpy as np
 import os
 
 class Linear_QNet(nn.Module):
@@ -33,11 +34,11 @@ class QTrainer:
         self.criterion = nn.MSELoss()
 
     def train_step(self, state, action, reward, next_state, game_over):
-        state = torch.tensor(state, dtype=torch.float)
+        state = torch.tensor(np.array(state), dtype=torch.float)
         next_state = torch.tensor(next_state, dtype=torch.float)
         action = torch.tensor(action, dtype=torch.long)
         reward = torch.tensor(reward, dtype=torch.float)
-        game_over = torch.tensor(game_over, dtype=torch.int)
+        game_over = torch.tensor(game_over, dtype=torch.bool)
 
         if len(state.shape) == 1:
             state = torch.unsqueeze(state, 0)
@@ -49,7 +50,7 @@ class QTrainer:
         pred = self.model(state)
 
         target = pred.clone()
-        for idx in range(len(game_over)):
+        for idx in range(len(state)):
             Q_new = reward[idx]
             if not game_over[idx]:
                 Q_new = reward[idx] + self.gamma * torch.max(self.model(next_state[idx]))
