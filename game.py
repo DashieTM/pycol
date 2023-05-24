@@ -35,7 +35,7 @@ class Move:
 class PySnake:
     # pygame.init()
     def __init__(self):
-        self.screen = pygame.display.set_mode((1280, 720))
+        self.screen = pygame.display.set_mode((1920, 1080))
         self.interactables = 3
         self.clock = pygame.time.Clock()
         self.dt = 1
@@ -57,6 +57,26 @@ class PySnake:
         self.has_food = False
         self.has_poison = False
         self.game_over = False
+
+    def get_closest_food(self):
+        distance = -1
+        closest_food = None
+
+        for pos in self.food_pos:
+            distance_to_food = pos.distance_to(self.player_pos)
+            if distance_to_food <= distance or distance == -1:
+                distance = distance_to_food
+                closest_food = pos
+        
+        return (distance, closest_food)
+    
+    def compare_current_with_next_pos(self, vect: pygame.Vector2):
+        dist, food = self.get_closest_food()
+
+        if vect.distance_to(food) < dist:
+            return True
+
+        return False
 
     def game_loop(self, human = False, move: list[int] = [0,0,0,0]):
         # pygame setup
@@ -175,11 +195,11 @@ class PySnake:
         if not self.has_food:
             self.food_pos = []
             for _ in range(self.interactables):
-                self.food_pos.append(pygame.Vector2(random.randint(0, self.screen.get_width()), random.randint(0, self.screen.get_height())))
+                self.food_pos.append(pygame.Vector2(random.randint(40, self.screen.get_width() - 40), random.randint(40, self.screen.get_height() - 40)))
             self.has_food = True
 
         if not self.has_poison:
             self.poison_pos = []
             for _ in range(self.interactables):
-                self.poison_pos.append(pygame.Vector2(random.randint(0, self.screen.get_width()), random.randint(0, self.screen.get_height())))
+                self.poison_pos.append(pygame.Vector2(random.randint(40, self.screen.get_width() - 40), random.randint(40, self.screen.get_height() - 40)))
             self.has_poison = True
