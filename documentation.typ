@@ -40,15 +40,6 @@ In terms of learning, Pytorch might not be as well known as Tensorflow, but ther
 For an actual game we would suggest to not use a python game engine, unless you would like to hack something together quickly, without regard for things such as performance.
 
 #section[Making Of]
-We started out with just creating the base game.\
-Here we just made a character that can move around and has to collect green dots on the map, which are considered as food.\
-The red dots serve as a "poison", which simply gives the player the opposite of "food".\
-Hence, food will increase the player size and poison will decrease the food size.\
-After the base game worked, we were able to adapt the Model from the tutorial to our game, we therefore specifically wanted to make a different game to see how the AI fares on something other than what was shown.\
-Here we had to map all the states that our game offers to the AI and store/update all values accordingly.\
-It is important to note, that we started with this project before we learned about the algorithm in the AI course, this means we were rather confused at first about all the terms and calculations.\
-But as we started to learn about all these terms, it became clear as to what function servers which purpose.
-
 #subsection[The Game]
 We wanted to create our own little game and not just copy the game from the tutorial we watched.\
 Therefore, we designed a two dimensional game where the player is a small ball and has to collect or eat other balls.\
@@ -61,7 +52,6 @@ It is possible playing the game manually or letting the AI play the game.
 #figure(
   image("img/game.png", width: 80%)
 )
-#pagebreak()
 
 #subsection[The AI]
 Although we looked at reinforcement learning in a theoretical part at the lectures it was still an unknown field to us in a practical way.\
@@ -104,7 +94,7 @@ We started off implementing our own game which has a similar simplicity to Snake
 While the game is obviously overly simple, we wanted to focus on the AI training part and not on the game itself.\
 In other words, the goal was to learn how to adapt the algorithm to work well with such a game.
 
-Afterwards, we started implementing our AI.\
+Afterward, we started implementing our AI.\
 First we copied the whole model and agent code from the tutorial, as we were curious if it would work with our game straight away.\
 But it didn't work immediately of course. \
 The first problem we encountered was, that there was one crucial difference from our game to the tutorial game.\

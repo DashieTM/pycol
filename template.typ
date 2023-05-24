@@ -10,7 +10,15 @@
   #line(start: (25%, 0%), end: (75%, 0%))
   #text(9pt, subtitle)
   ])
-  pagebreak(weak: false)
+  text(black, [
+\
+\
+\
+\
+
+  ])
+
+ 
   outline(title: "Table of Contents", indent: true, depth: 3)
   pagebreak(weak: false)
   set page(
