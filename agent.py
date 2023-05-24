@@ -17,6 +17,7 @@ import torch
 import pygame
 import numpy as np
 import random
+import plotter
 from collections import deque
 from game import PySnake, Move
 from model import Linear_QNet, QTrainer
@@ -34,6 +35,7 @@ class Agent:
         self.memory = deque(maxlen=MAX_MEMORY)
         self.model = Linear_QNet(21, 512, 4)
         self.trainer = QTrainer(self.model, lr=LEARNINGRATE, gamma=self.gamma)
+        plotter.plot([0], [0])
         # if memory exceeded automatically removes it on the left
 
     def get_state(self, game: PySnake):
@@ -134,6 +136,7 @@ class Agent:
 
 def train():
     scores = []
+    mean_scores = []
     total_reward = 0
     best_score = 0
     agent = Agent()
@@ -174,6 +177,10 @@ def train():
             print('Game', agent.game_amount,'Reward', total_reward,'Epsilon', agent.epsilon, 'Score', score, 'Record:', best_score)
 
             scores.append(score)
+            mean_scores.append(np.mean(scores))
+            
+            plotter.plot(scores, mean_scores)
+
             print('All scores', scores)
             total_reward = 0
             if agent.epsilon >= 0.3:
