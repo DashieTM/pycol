@@ -1,14 +1,20 @@
 /* page setup */
-#let conf(author: "Fabio Lenherr", title, subtitle, doc) = {
+#let conf(author: "Fabio Lenherr", title, subtitle, doc, pic1, pic2) = {
   set document(title: title, author: author) 
   set align(center)
   set par(justify: true)
   align(center + horizon, [
+  #pic1
+  \
+  \
   #text(17pt, title)
   #line(length: 100%)
   #text(10pt, author)
   #line(start: (25%, 0%), end: (75%, 0%))
   #text(9pt, subtitle)
+  \
+  \
+  #pic2
   ])
   text(black, [
 \
@@ -107,17 +113,14 @@
 }
 
 #let subsection(name) = {
-  align(center, [#heading(numbering: "1.1.1.", level: 2,name)])
-  line(length: 100%)
+  text(size: 10pt,[#heading(numbering: "1.1.1.", level: 2,name)])
 }
 
 #let subsubsection(name) = {
-  align(center, [#heading(numbering: "1.1.1.", level: 3,name)])
-  line(length: 100%)
+  align(center, [#heading(numbering: "1.1.1.", level: 3,[#text(size: 10pt, name)])])
 }
 
 #let subsubsubsection(name) = {
   align(center, [#heading(numbering: "1.1.1.", level: 4,name)])
-  line(length: 100%)
 }
 

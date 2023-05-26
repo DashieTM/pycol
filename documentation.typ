@@ -1,33 +1,30 @@
 #import "template.typ": *
 
+
 #show: doc => conf(
   author: "Kaj Habegger & Fabio Lenherr",
   "PySnake",
   "Miniproject",
   doc,
+  [ #image("img/Pytorch_logo.png", width: 70%) ],
+  [ #image("img/pygame_logo.png", width: 70%) ]
 )
 
+
 #section[Introduction]
-We decided to do a small reinforcement learning project.\
-As we have never done anything in terms of reinforcement learning before, we used this #link("https://www.youtube.com/watch?v=L8ypSXwyBds&list=WL&index=26")[video] as a starting point.\
-It is a tutorial of creating a Snake game and design a reinforcement learning AI model which is able to play the game after some iterations.
+For this project, we decided to test reinforcement learning with Pytorch on a small game made with PyGame.\
+As a starting point to learn from, we used this tutorial on youtube: #link("https://www.youtube.com/watch?v=L8ypSXwyBds&list=WL&index=26")[Link to video]\ 
+The video explains the steps needed to create an agent for the snake game, which we will adapt to work for our own game.
 
 #section[Tooling]
-Like the in the tutorial linked above, we used Pytorch to design our AI model and Pygame to create our game.\
-It is worth pointing out that we planned to use Pytorch anyway because we wanted to try out a tool similar to Tensorflow.\
-Furthermore, support for OpenCL is also better with Pytorch compared to Tensorflow. To use something like ROCM(AMD opencl implementation), you would need to use a specific docker container, which might or might not work for your usecase.\
-With pytorch, there are easy installation instructions for all GPU vendors and all operating systems.\
-
-For the game itself we used an open source game engine written for python, namely Pygame.\
-Pygame is a composition of Python modules like computer graphic and sound libraries. Creating a game with Pygame is straightforward.
+We decided to use Pytorch in particular to see both the differences to Tensorflow and to get better support for other GPU vendors such as AMD or Intel.\
+The game engine was a simple choice as it is also written in python, and therefore offers easy setup and integration with the agent.\
+For a bigger game, it would be a better choice to use an established game engine, or at least a non-interpreted programming language for better performance.
 
 #subsection[Problems]
-While it is true that Pytorch supports OpenCL, it is still questionable whether or not one can actually go ahead and use this.\
-The reason for this is the lackluster support from AMD and Intel. They often only provide OpenCL support for very specific GPUs on very specific platforms.\
-This means that one could potentially still not use the GPU for AI learning, and it explains why Nvidia has the clear monopoly in this space.\
-The other vendors simply do not invest enough time into supporting GPU compute.
-Luckily, with the mesa drivers on Linux (not a solution for other platforms!), there seems to be a light in the dark with OpenCL support, thanks to a new driver written in rust(rusticl).\
-This driver was just a tad too late for this project, as rolling Linux distributions will be able to properly use it around end of May.
+While Pytorch does support other vendors, these vendors themselves do not necessarily support GPU compute.\
+We also had to face this issue as AMD only supports very specific cards on very specific platforms.\
+This would mean that one would still have to potentially fall-back to using Nvidia.
 
 #subsection("Usage of Pytorch")
 Pytorch is very similar in usage to Tensorflow with a few different terms being used.\
@@ -37,15 +34,14 @@ E.q. Noone implements their own model by hand, instead we can just call function
 #subsection("Costs")
 In our case, both the game egine and the machine learning library are free and open source, meaning anyone can go ahead and create a game with an AI by simply using their own time.\
 In terms of learning, Pytorch might not be as well known as Tensorflow, but there are already tons of tutorials and other resources on the internet, which will help you get started with this library.\
-For an actual game we would suggest to not use a python game engine, unless you would like to hack something together quickly, without regard for things such as performance.
 
 #section[Making Of]
 #subsection[The Game]
 We wanted to create our own little game and not just copy the game from the tutorial we watched.\
 Therefore, we designed a two dimensional game where the player is a small ball and has to collect or eat other balls.\
 There are two different types of balls to eat; green and red ones.\
-By collecting a green ball the player grows in size and gets smaller when collecting red balls respectively.\
-If the player has minimal size and collects a red ball the game is over. Touching the wall also ends the game.\
+By collecting green balls the player grows in size and gets smaller when collecting red balls respectively.\
+If the player is at the minimal size and collects a red ball the game is over. Touching the wall also ends the game.\
 As the player grows each time eating a green ball it gets more difficult over time to avoid the wall as well as red balls.\
 It is possible playing the game manually or letting the AI play the game.
 
@@ -57,7 +53,7 @@ It is possible playing the game manually or letting the AI play the game.
 Although we looked at reinforcement learning in a theoretical part at the lectures it was still an unknown field to us in a practical way.\
 Therefore, we initially invested some time to understand how the basics work.\
 We did this by reading through the code base of the already mentioned tutorial.\
-Furthermore, some parts are copied from the tutorial code base.\
+Furthermore, some parts are adapted from the tutorial code base.\
 The AI of our project is divided into an agent- and a model part.
 
 #subsubsection[Model]
@@ -66,8 +62,16 @@ The Linear_QNet holds the two methods for forward propagation as well as the sav
 It is basically the model network representing the input, hidden and output layer.\
 The other class in the model is the QTrainer it holds only one function which is called train_step.\
 This train_step method is used after each action the agent performs to optimize the model.\
-Roughly described the train_step method updates the loss and performs backward propagation.
-
+Roughly described the train_step method updates the loss and performs backward propagation.\
+In this train_step, there is obviously also the Q function that was explained in the AI Application lectures:
+```python
+Q_new = reward[idx]     # idx is the state iteration
+if not game_over[idx]:  # in other words, this is done for each possible state 
+    Q_new = reward[idx] + self.gamma * torch.max(self.model(next_state[idx]))
+```
+This refers to the formula: *$ r_t + gamma * "max"Q(s_t + 1, alpha)$* which means current reward plus dicount rate multiplied by the next best state (max rewards)\
+In other words, it calculates the best next action according to the current reward and according to the max reward at the end, with the discount rate diminishing rewards that are "too far away". 
+// TODO explain this func
 
 #subsubsection[Agent]
 The Agent consists of a single class which is called agent as well.\
@@ -96,22 +100,15 @@ In other words, the goal was to learn how to adapt the algorithm to work well wi
 
 Afterward, we started implementing our AI.\
 First we copied the whole model and agent code from the tutorial, as we were curious if it would work with our game straight away.\
-But it didn't work immediately of course. \
-The first problem we encountered was, that there was one crucial difference from our game to the tutorial game.\
-The player in the tutorial game moves automatically while in our game input is mandatory to make the player move.\
-Each time an input key is pressed the player moves one step into the respective direction in our game.\ 
-In the tutorial game the player moves permanently and changes direction each time an input key is pressed to the respective direction.\
-This led to another issue, which was that our game has four different input possibilities (up, right, down and left) instead of two (left and right).\
-This means our AI needs four output layers and not only two.
+Unsurprisingly, this was not the case. In snake, there are only 3 possible actions, left, straight, or right.\
+This means the AI has 3 output states, however, our game allows up, right, down, left. This means we now need 4 output states, and it also means that our AI has to be a bit bigger with more states to care about.
 
-Those initial problems were sorted out rapidly.
-We increased the output layers in the Linear_QNet to 4 and changed the method to get the next action accordingly.
+The problem about states was easy to solve, just increase the output layer of the Linear_QNet to 4.\
+However the rest of the different states were not as straight forward.\
+We tried a variety of input states, even going as far as to mathematically calculate the next best move.\
+Something that is of course not feasible in other games, situations.
 
-Soon after another problem arose. We noticed that the parameters in the state of the tutorial were substantially different to the ones we actually need.\
-Because the state formation is fundamental for a working AI it is really important to get that right.\
-But we had to find out that it is rather hard to find the optimal parameters for the state.
-
-#subsection[Issues]
+#subsection[Problems to solve]
 - AI learns well until it moves in a straight line\
   At first, the AI seemed to not be learning enough, for which we then decided to increase the learning rate.\
   Interestingly, this resulted in the AI suddenly stopping to change directions at all, meaning it would just pick a direction, and then move to its demise.
@@ -126,31 +123,38 @@ But we had to find out that it is rather hard to find the optimal parameters for
   Meaning after 1,2,3 or x amount of rewards, it just stops trying to go after the food and eventually moves into the wall, resulting in a game over.
 
 - Unused Information\
-  This is probably the hardest problem to properly solve.\
-  Despite the fact that we provide information to the AI about potential wall collisions, it still seemingly does not see them as a threat, and continuously moves into it.
+  Despite the fact that we provide information to the AI about potential wall collisions, it still seemingly does not always see them as a threat, and sporadically moves into it.\
+  Here we can only improve this by trying to provide more and more "useful" information that the AI can work with.
 
 - Where to reward?\
-  Just like a dog, we would like to "reward" good behavior and "discourage" bad behavior.\
-  Problem is, how can we make sure we actually reward the right action?\
+  Just like a dog, we would like to "reward" good behavior and "discourage" bad behavior. Problem is, how can we make sure we actually reward the right action?\
   For this example, if we simply reward moving towards the food, then the AI could figure out that it could continuously make the same move, one step towards the food and one back.\
-  This would result in an infinite loop of rewards, with the only action being the discouragement of moving away from the food.\
-  However, constant negative rewards might also confuse the AI.\
-  In short, the hardest part is making sure, that the AI sees a clear path to the food from each possible state.\
-  Providing only the location of the food is not good enough, as it doesn't give the AI a clear enough path towards the food.
+  This would result in an infinite loop of rewards... something we would want to discourage.\
+  In this case one would need to punish the AI everytime it moves away from the food, however, one has to be careful to not invoke other unseen consequences.
 
-CODING BUGS
+- What states to use?\
+  The states that the AI receives can heavily impact the learning process, providing more information automatically makes it harder for a single state to matter.\
+  This means one should keep the states as few as possible, while not withholding important information.
 
-TRYING OUT DIFFERENT VALUES (reward, reward by how close the player is to obstacles)
-
-MULTI OBSTACLES
+#subsection("Multi Obstacles")
+At first, we only had one single food on the map, this was to simply train the model to chase after it.\
+Later on, we decided to also introduce poison for the AI to avoid, and further to increase the amount of both types.\
+This meant once again, that the input states for our AI had to increase, as suddenly the amount of possible paths to both positive and negative rewards increased drastically.
 
 #subsection("Input Mapping")
 The input mapping is done with a simple integer, this means that we have the value 0 to 3.\
 0 is up, 1 is right, 2 is down, and 3 is left. (CSS style)\
-
-
-STATE INPUTS
+For the random part we simply use the rand functionality from python, and on the Linear_QNet side, we can use the max function to receive the highest match. (each direction has 1 neuron -> we receive the 1 neuron that had the highest value)
+```python
+current_state = torch.tensor(state, dtype=torch.float) # tansform our state to a tensor 
+prediction = self.model.forward(current_state) # use the tensor as the input for our model 
+prediction = torch.argmax(prediction).item() # set highest value neuron in the model to be output
+predicted_move[prediction] = 1               # this sets the output for our game -> ex. predicted_move[0] == up 
+```
 
 #section("Conclusion")
-It is very clear, that reinforcement learning is a cool tool to use, but the actual application of that tool is rather complex.\
-Perhaps with a future project, this could be a side project for fun.
+Reinforcement learning provides a very sophisticated way of creating agents for various applications. The issue however, is that these agents are often not consistent enough.\
+Even for this game, it is not entirely trivial to find the right input states and parameters in order to get the AI to behave correctly in each situation.\
+This means that for bigger games it is even harder. A good example is Dota2, while the AI by OpenAI has managed to beat professional players, it has only done that against regular play.\
+As soon as players started using strange and supposedly nonsensical strategies, the AI seemed to crumble, as it could not manage to adapt to it fast enough.\
+Reinforcement learning is thereby a great tool, but one also needs to know the limitations of it.
