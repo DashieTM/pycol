@@ -13,7 +13,7 @@
 
 #section[Introduction]
 For this project, we decided to test reinforcement learning with Pytorch on a small game made with PyGame.\
-As a starting point to learn from, we used this tutorial on youtube: #link("https://www.youtube.com/watch?v=L8ypSXwyBds&list=WL&index=26")[Link to video]\ 
+As a starting point to learn from, we used this tutorial on Youtube: #link("https://www.youtube.com/watch?v=L8ypSXwyBds&list=WL&index=26")[Link to video]\ 
 The video explains the steps needed to create an agent for the snake game, which we will adapt to work for our own game.
 
 #section[Tooling]
@@ -69,7 +69,7 @@ Q_new = reward[idx]     # idx is the state iteration
 if not game_over[idx]:  # in other words, this is done for each possible state 
     Q_new = reward[idx] + self.gamma * torch.max(self.model(next_state[idx]))
 ```
-This refers to the formula: *$ r_t + gamma * "max"Q(s_t + 1, alpha)$* which means current reward plus dicount rate multiplied by the next best state (max rewards)\
+This refers to the formula: *$ r_t + gamma * "max"Q(s_t + 1, alpha)$* which means current reward plus discount rate multiplied by the next best state (max rewards)\
 In other words, it calculates the best next action according to the current reward and according to the max reward at the end, with the discount rate diminishing rewards that are "too far away". 
 // TODO explain this func
 
@@ -130,7 +130,7 @@ Something that is of course not feasible in other games, situations.
   Just like a dog, we would like to "reward" good behavior and "discourage" bad behavior. Problem is, how can we make sure we actually reward the right action?\
   For this example, if we simply reward moving towards the food, then the AI could figure out that it could continuously make the same move, one step towards the food and one back.\
   This would result in an infinite loop of rewards... something we would want to discourage.\
-  In this case one would need to punish the AI everytime it moves away from the food, however, one has to be careful to not invoke other unseen consequences.
+  In this case one would need to punish the AI every time it moves away from the food, however, one has to be careful to not invoke other unseen consequences.
 
 - What states to use?\
   The states that the AI receives can heavily impact the learning process, providing more information automatically makes it harder for a single state to matter.\
@@ -146,7 +146,7 @@ The input mapping is done with a simple integer, this means that we have the val
 0 is up, 1 is right, 2 is down, and 3 is left. (CSS style)\
 For the random part we simply use the rand functionality from python, and on the Linear_QNet side, we can use the max function to receive the highest match. (each direction has 1 neuron -> we receive the 1 neuron that had the highest value)
 ```python
-current_state = torch.tensor(state, dtype=torch.float) # tansform our state to a tensor 
+current_state = torch.tensor(state, dtype=torch.float) # transform our state to a tensor 
 prediction = self.model.forward(current_state) # use the tensor as the input for our model 
 prediction = torch.argmax(prediction).item() # set highest value neuron in the model to be output
 predicted_move[prediction] = 1               # this sets the output for our game -> ex. predicted_move[0] == up 
