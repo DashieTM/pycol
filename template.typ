@@ -117,7 +117,7 @@
 }
 
 #let subsubsection(name) = {
-  align(center, [#heading(numbering: "1.1.1.", level: 3,[#text(size: 10pt, name)])])
+  heading(numbering: "1.1.1.", level: 3,name)
 }
 
 #let subsubsubsection(name) = {

@@ -37,6 +37,9 @@ In terms of learning, Pytorch might not be as well known as Tensorflow, but ther
 
 #section[Making Of]
 #subsection[The Game]
+#figure(
+  image("img/game.png", width: 80%)
+)
 We wanted to create our own little game and not just copy the game from the tutorial we watched.\
 Therefore, we designed a two dimensional game where the player is a small ball and has to collect or eat other balls.\
 There are two different types of balls to eat; green and red ones.\
@@ -45,9 +48,6 @@ If the player is at the minimal size and collects a red ball the game is over. T
 As the player grows each time eating a green ball it gets more difficult over time to avoid the wall as well as red balls.\
 It is possible playing the game manually or letting the AI play the game.
 
-#figure(
-  image("img/game.png", width: 80%)
-)
 
 #subsection[The AI]
 Although we looked at reinforcement learning in a theoretical part at the lectures it was still an unknown field to us in a practical way.\
@@ -158,3 +158,8 @@ Even for this game, it is not entirely trivial to find the right input states an
 This means that for bigger games it is even harder. A good example is Dota2, while the AI by OpenAI has managed to beat professional players, it has only done that against regular play.\
 As soon as players started using strange and supposedly nonsensical strategies, the AI seemed to crumble, as it could not manage to adapt to it fast enough.\
 Reinforcement learning is thereby a great tool, but one also needs to know the limitations of it.
+
+#figure(
+image("img/plot.png", width: 100%),
+caption: [Plot of the AI learning to play the game]
+)
