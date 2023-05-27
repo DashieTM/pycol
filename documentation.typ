@@ -3,7 +3,7 @@
 
 #show: doc => conf(
   author: "Kaj Habegger & Fabio Lenherr",
-  "PySnake",
+  "PySnakeBall",
   "Miniproject",
   doc,
   [ #image("img/PyTorch_logo.png", width: 70%) ],
@@ -103,12 +103,20 @@ In other words, the goal was to learn how to adapt the algorithm to work well wi
 Afterward, we started implementing our AI.\
 First we copied the whole model and agent code from the tutorial, as we were curious if it would work with our game straight away.\
 Unsurprisingly, this was not the case. In snake, there are only 3 possible actions, left, straight, or right.\
-This means the AI has 3 output states, however, our game allows up, right, down, left. This means we now need 4 output states, and it also means that our AI has to be a bit bigger with more states to care about.
+This means the AI has three game input possibilities, however, our game allows up, right, down, left. This means we now need four game input possibilities, and it also means that our AI has to be a bit bigger with more state values to care about.
 
-The problem about states was easy to solve, we just had to increase the output layer of the Linear_QNet to 4.\
-However, the rest of the different states were not as straight forward.\
-We tried a variety of input states, even going as far as to mathematically calculate the next best move.\
-Something that is of course not feasible in other games, situations.
+The problem about game input possibilities was easy to solve, we just had to increase the output layer of the Linear_QNet to four.\
+However, the problem about the state values was not as straight forward.\
+We tried a variety of state values until we found the valus that fitted the best to our project.\
+In the meantime, we had around 40 state values. Finally, we ended up with 21 state values.\
+Whereas, we defined the following state values:
+
+- Four state values which tell, if there is danger in one of the possible directions.
+- Four state values which tell, if the player gets closer to the closest food by going into the respective direction.
+- Four state values for each food item which tell, if the player is below the x- and y-axis value or if it is on the same x- and y-axis value of the respective food item.
+- One state value which tells, if the player has just eaten a food item or a poison item.
+
+After we had sorted out the state value challenge, we had some other problems to solve. Most of them being related to hyper parameter tuning. You can find those problems and how we solved them in the next section.\
 
 #subsection[Problems to solve]
 - AI learns well until it moves in a straight line\
