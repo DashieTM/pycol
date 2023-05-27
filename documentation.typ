@@ -35,10 +35,12 @@ E.q. No one implements their own model by hand, instead we can just call functio
 In our case, both the game engine and the machine learning library are free and open source, meaning anyone can go ahead and create a game with an AI by simply using their own time.\
 In terms of learning, PyTorch might not be as well known as TensorFlow, but there are already tons of tutorials and other resources on the internet, which will help you get started with this library.\
 
+#pagebreak()
+
 #section[Making Of]
 #subsection[The Game]
 #figure(
-  image("img/game.png", width: 80%)
+  image("img/game-screen.png", width: 80%)
 )
 We wanted to create our own little game and not just copy the game from the tutorial we watched.\
 Therefore, we designed a two-dimensional game where the player is a small ball and has to collect or eat other balls.\
