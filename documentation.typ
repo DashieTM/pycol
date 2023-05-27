@@ -105,7 +105,7 @@ First we copied the whole model and agent code from the tutorial, as we were cur
 Unsurprisingly, this was not the case. In snake, there are only 3 possible actions, left, straight, or right.\
 This means the AI has 3 output states, however, our game allows up, right, down, left. This means we now need 4 output states, and it also means that our AI has to be a bit bigger with more states to care about.
 
-The problem about states was easy to solve, just increase the output layer of the Linear_QNet to 4.\
+The problem about states was easy to solve, we just had to increase the output layer of the Linear_QNet to 4.\
 However, the rest of the different states were not as straight forward.\
 We tried a variety of input states, even going as far as to mathematically calculate the next best move.\
 Something that is of course not feasible in other games, situations.
