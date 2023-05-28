@@ -3,17 +3,17 @@
 
 #show: doc => conf(
   author: "Kaj Habegger & Fabio Lenherr",
-  "PySnakeBall",
+  "PyFeed",
   "Miniproject",
   doc,
-  [ #image("img/PyTorch_logo.png", width: 70%) ],
+  [ #image("img/Pytorch_logo.png", width: 70%) ],
   [ #image("img/pygame_logo.png", width: 70%) ]
 )
 
 
 #section[Introduction]
 For this project, we decided to test reinforcement learning with PyTorch on a small game made with PyGame.\
-As a starting point to learn from, we used this tutorial on Youtube: #link("https://www.youtube.com/watch?v=L8ypSXwyBds&list=WL&index=26")[Link to video]\ 
+As a starting point to learn from, we used this tutorial on YouTube: #link("https://www.youtube.com/watch?v=L8ypSXwyBds&list=WL&index=26")[Link to video]\ 
 The video explains the steps needed to create an agent for the snake game, which we adapted to work for our own game.
 
 #section[Tooling]
@@ -34,8 +34,6 @@ E.q. No one implements their own model by hand, instead we can just call functio
 #subsection("Costs")
 In our case, both the game engine and the machine learning library are free and open source, meaning anyone can go ahead and create a game with an AI by simply using their own time.\
 In terms of learning, PyTorch might not be as well known as TensorFlow, but there are already tons of tutorials and other resources on the internet, which will help you get started with this library.\
-
-#pagebreak()
 
 #section[Making Of]
 #subsection[The Game]
@@ -73,7 +71,6 @@ if not game_over[idx]:  # in other words, this is done for each possible state
 ```
 This refers to the formula: *$ r_t + gamma * "max"Q(s_t + 1, alpha)$* which means current reward plus discount rate multiplied by the next best state (max rewards)\
 In other words, it calculates the best next action according to the current reward and according to the max reward at the end, with the discount rate diminishing rewards that are "too far away". 
-// TODO explain this func
 
 #subsubsection[Agent]
 The Agent consists of a single class which is called agent as well.\
@@ -101,20 +98,20 @@ While the game is obviously overly simple, we wanted to focus on the AI training
 In other words, the goal was to learn how to adapt the algorithm to work well with such a game.
 
 Afterward, we started implementing our AI.\
-First we copied the whole model and agent code from the tutorial, as we were curious if it would work with our game straight away.\
+First we adapted the whole model and agent code from the tutorial, as we were curious if it would work with our game straight away.\
 Unsurprisingly, this was not the case. In snake, there are only 3 possible actions, left, straight, or right.\
 This means the AI has three game input possibilities, however, our game allows up, right, down, left. This means we now need four game input possibilities, and it also means that our AI has to be a bit bigger with more state values to care about.
 
 The problem about game input possibilities was easy to solve, we just had to increase the output layer of the Linear_QNet to four.\
 However, the problem about the state values was not as straight forward.\
-We tried a variety of state values until we found the valus that fitted the best to our project.\
+We tried a variety of state values until we found the values that fitted the best to our project.\
 In the meantime, we had around 40 state values. Finally, we ended up with 21 state values.\
 Whereas, we defined the following state values:
 
-- Four state values which tell, if there is danger in one of the possible directions.
-- Four state values which tell, if the player gets closer to the closest food by going into the respective direction.
-- Four state values for each food item which tell, if the player is below the x- and y-axis value or if it is on the same x- and y-axis value of the respective food item.
-- One state value which tells, if the player has just eaten a food item or a poison item.
+- Four state values: if there is danger in one of the possible directions.
+- Four state values: if the player gets closer to the closest food by going into the respective direction.
+- Four state values: for each food item, if the player is below the x- and y-axis value or if it is on the same x- and y-axis value of the respective food item.
+- One state value: if the player has just eaten a food item or a poison item.
 
 After we had sorted out the state value challenge, we had some other problems to solve. Most of them being related to hyper parameter tuning. You can find those problems and how we solved them in the next section.\
 
@@ -169,7 +166,7 @@ This means that for bigger games it is even harder. A good example is Dota2, whi
 As soon as players started using strange and supposedly nonsensical strategies, the AI seemed to crumble, as it could not manage to adapt to it fast enough.\
 Reinforcement learning is thereby a great tool, but one also needs to know the limitations of it.
 
-#figure(
-image("img/plot.png", width: 100%),
-caption: [Plot of the AI learning to play the game]
-)
+//#figure(
+//image("img/plot.png", width: 100%),
+//caption: [Plot of the AI learning to play the game]
+//)
