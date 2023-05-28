@@ -76,13 +76,13 @@ In other words, it calculates the best next action according to the current rewa
 The Agent consists of a single class which is called agent as well.\
 Besides the methods, it holds all important parameters for our AI.\
 Those parameters are:
-- Epsilon: Controls how much percent of the AI actions should initially be random rather than predicted by the model.\
+- Epsilon: Controls the percentage of the AI actions that should initially be random rather than predicted by the model.\
   This parameter is important as the AI has no idea what it should do at the beginning.\
   As the AI learns over time, this parameter value gets lowered after each game over.
 
 - Gamma: The discount rate is a parameter that determines the relative importance of immediate rewards compared to future rewards.\
-  It represents the extent to which the agent values immediate rewards over delayed rewards.\
-  A discount rate close to 1 means the agent considers future rewards, while a discount rate closer to 0 places more emphasis on immediate rewards.
+  It represents the extent to which the agent prefers immediate rewards over delayed rewards.\
+  A discount rate close to 1 means the agent considers future rewards to be equal to immediate rewards, while a discount rate closer to 0 places more emphasis on immediate rewards.
 
 - Memory: The memory is represented by a deque data structure.\
   It is basically the memory of the AI where it can store current states, actions, rewards, next states and if it is currently in game over mode.
@@ -116,30 +116,30 @@ Whereas, we defined the following state values:
 After we had sorted out the state value challenge, we had some other problems to solve. Most of them being related to hyper parameter tuning. You can find those problems and how we solved them in the next section.\
 
 #subsection[Problems to solve]
-- AI learns well until it moves in a straight line\
+- _AI learns well until it moves in a straight line_\
   At first, the AI seemed to not be learning enough, for which we then decided to increase the learning rate.\
   Interestingly, this resulted in the AI suddenly stopping to change directions at all, meaning it would just pick a direction, and then move to its demise.
 
-- AI unsure about next move\
+- _AI unsure about next move_\
   In this case, the AI seemed to learn the basic idea of chasing after the green ball.\
   However, after a while, the AI seemed to be unsure what the next move should be, resulting in the AI moving back and forth, essentially doing the same move over and over again.\
   This resulted in a stopped learning process, as the game would never end.
 
-- AI loses interest in Food\
+- _AI loses interest in Food_\
   This is the strangest of all the issues, despite receiving input on where the food is, the AI only moves towards the food a few times.\
   Meaning after 1,2,3 or x amount of rewards, it just stops trying to go after the food and eventually moves into the wall, resulting in a game over.
 
-- Unused Information\
+- _Unused Information_\
   Despite the fact that we provide information to the AI about potential wall collisions, it still seemingly does not always see them as a threat, and sporadically moves into it.\
   Here, we can only improve this by trying to provide more and more "useful" information that the AI can work with.
 
-- Where to reward?\
+- _Where to reward?_\
   Just like a dog, we would like to "reward" good behavior and "discourage" bad behavior. Problem is, how can we make sure we actually reward the right action?\
   For this example, if we simply reward moving towards the food, then the AI could figure out that it could continuously make the same move, one step towards the food and one back.\
   This would result in an infinite loop of rewards, something we would want to discourage.\
   In this case one would need to punish the AI every time it moves away from the food, however, one has to be careful to not invoke other unseen consequences.
 
-- What states to use?\
+- _What states to use?_\
   The states that the AI receives can heavily impact the learning process, providing more information automatically makes it harder for a single state to matter.\
   This means one should keep the states as few as possible, while not withholding important information.
 
