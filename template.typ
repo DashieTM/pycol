@@ -31,6 +31,7 @@
     paper: "a4",
     margin: (x: 1.5cm, top: 50pt),
     header: [
+      #set text(font: "Noto Serif")
       #smallcaps(author)
       #h(1fr)  #emph(title)
     ],
